@@ -1,0 +1,31 @@
+{
+  "name": "da-postork",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FiestaTheNewbieDev/da-postork"
+  },
+  "keywords": [],
+  "author": "FiestaTheNewbieDev",
+  "license": "",
+  "dependencies": {
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.3.1",
+    "fs": "^0.0.1-security",
+    "glob": "7.2.0",
+    "puppeteer": "^21.3.8",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.51.0",
+    "nodemon": "^3.0.1"
+  }
+}
