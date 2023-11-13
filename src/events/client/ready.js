@@ -1,7 +1,7 @@
 const articlesController = require('../../controllers/articlesController');
 
 // Milliseconds * Seconds * Minutes = 15 minutes
-let TIMEOUT = 1000 * 60 * 15;
+const INTERVAL = 1000 * 60 * 15;
 
 module.exports = {
     name: 'ready',
@@ -10,6 +10,6 @@ module.exports = {
         console.log('\x1b[32m', `\n${client.user.username} ready\n`, '\x1b[37m');
 
         (async () => await articlesController.sendArticles(client))();
-        setTimeout(async () => await articlesController.sendArticles(client), TIMEOUT);
+        setInterval(async () => await articlesController.sendArticles(client), INTERVAL);
     }
 };
