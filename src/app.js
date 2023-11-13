@@ -1,5 +1,5 @@
 const dotenv = require('dotenv');
-const {Client, IntentsBitField, Collection} = require('discord.js');
+const {Client, IntentsBitField, Collection, PermissionsBitField} = require('discord.js');
 
 dotenv.config();
 
@@ -18,3 +18,12 @@ process.on('unhandledRejection', (reason, promise) => {console.error('\x1b[31m' 
 process.on('warning', (...args) => console.warn('\x1b[33m' + args + '\x1b[37m'));
 
 client.login(process.env.DISCORD_TOKEN);
+
+// Permissions needed by the bot
+const neededPermissions = [
+    PermissionsBitField.Flags.ViewChannel,
+    PermissionsBitField.Flags.SendMessages,
+    PermissionsBitField.Flags.EmbedLinks,
+    PermissionsBitField.Flags.AddReactions,
+    PermissionsBitField.Flags.ReadMessageHistory
+];
