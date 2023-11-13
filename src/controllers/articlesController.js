@@ -1,4 +1,4 @@
-const {PermissionsBitField, EmbedBuilder} = require('discord.js');
+const {EmbedBuilder, PermissionsBitField} = require('discord.js');
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
@@ -58,15 +58,6 @@ async function getNewArticles() {
 
 module.exports = {
     async sendArticles(client) {
-        // Permissions needed to send a message
-        const neededPermissions = [
-            PermissionsBitField.Flags.ViewChannel,
-            PermissionsBitField.Flags.SendMessages,
-            PermissionsBitField.Flags.EmbedLinks,
-            PermissionsBitField.Flags.AddReactions,
-            PermissionsBitField.Flags.ReadMessageHistory
-        ];
-    
         console.log(`\x1b[90m${new Date().toLocaleString()}\x1b[37m`);
     
         let articles = await getNewArticles();
@@ -79,8 +70,9 @@ module.exports = {
             client.guilds.cache.forEach(guild => {
                 // For each channel the bot has access to
                 guild.channels.cache.forEach(channel => {
-                    // If the channel is a text channel and the bot has the required permissions
-                    if (channel.type == 0 && channel.permissionsFor(client.user).has(neededPermissions)) {
+                    // If the channel is a text channel and the bot has the required permissions to send messages
+                    if (channel.type == 0 && channel.permissionsFor(client.user).has([PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages,
+                        PermissionsBitField.Flags.EmbedLinks])) {
                         // For each article send a message
                         articles.forEach(article => {
                             const embed = new EmbedBuilder()
@@ -95,13 +87,15 @@ module.exports = {
                             // Promise that the message has been sent
                             const promise = channel.send({embeds: [embed]})
                                 .then(message => {
-                                    return Promise.all([
-                                        message.react('👍'),
-                                        message.react('😐'),
-                                        message.react('👎')
-                                    ]);
-                                })
-                                .then(() => {
+                                    // If the bot has the required permissions to add reactions
+                                    if (channel.permissionsFor(client.user).has([PermissionsBitField.Flags.AddReactions, PermissionsBitField.Flags.ReadMessageHistory])) {
+                                        return Promise.all([
+                                            message.react('👍'),
+                                            message.react('😐'),
+                                            message.react('👎')
+                                        ]);
+                                    }
+                                }).then(() => {
                                     messagesCount++;
                                 });
     
