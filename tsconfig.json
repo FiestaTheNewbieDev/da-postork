@@ -11,6 +11,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
+      "@warhammer-community/*": ["src/modules/warhammer-community/*"],
       "@discord/*": ["src/modules/discord/*"],
       "@modules/*": ["src/modules/*"],
       "@/*": ["src/*"]

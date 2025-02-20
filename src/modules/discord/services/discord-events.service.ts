@@ -8,7 +8,7 @@ import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
 export class DiscordEventsService implements OnModuleInit {
-  private logger = new Logger(DiscordEventsService.name);
+  private readonly logger = new Logger(DiscordEventsService.name);
 
   constructor(
     private readonly discordClientService: DiscordClientService,
@@ -36,15 +36,15 @@ export class DiscordEventsService implements OnModuleInit {
       }
 
       if (event.once)
-        client.once(event.name, (...args: any[]) =>
+        client.once(event.name, (...args: any[]) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          event.execute(...args),
-        );
+          void event.execute(...args);
+        });
       else
-        client.on(event.name, (...args: any[]) =>
+        client.on(event.name, (...args: any[]) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          event.execute(...args),
-        );
+          void event.execute(...args);
+        });
 
       this.logger.log(MESSAGES['event-loaded'](event.name));
     }

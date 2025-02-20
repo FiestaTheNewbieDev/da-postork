@@ -22,7 +22,7 @@ export class MessageCreateEvent extends AbstractEvent {
       const command = this.discordClientService.commands.get(commandName);
       if (!command) return;
 
-      command.execute(message, args);
+      void command.execute(message, args);
     }
   }
 }

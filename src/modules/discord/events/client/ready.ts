@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ReadyEvent extends AbstractEvent {
-  private logger = new Logger(ReadyEvent.name);
+  private readonly logger = new Logger(ReadyEvent.name);
 
   constructor(
     private readonly discordClientService: DiscordClientService,

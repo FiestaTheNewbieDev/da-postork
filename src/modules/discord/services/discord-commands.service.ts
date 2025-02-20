@@ -7,7 +7,7 @@ import { ModuleRef } from '@nestjs/core';
 
 @Injectable()
 export class DiscordCommandsService implements OnModuleInit {
-  private logger = new Logger(DiscordCommandsService.name);
+  private readonly logger = new Logger(DiscordCommandsService.name);
 
   constructor(
     private readonly discordClientService: DiscordClientService,

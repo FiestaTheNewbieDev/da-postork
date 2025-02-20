@@ -1,13 +1,18 @@
 import { ERROR_MESSAGES } from '@discord/constants/messages';
 import AbstractCommand from '@discord/misc/AbstractCommand';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Client, Collection, IntentsBitField } from 'discord.js';
 
 @Injectable()
-export class DiscordClientService implements OnModuleInit {
+export class DiscordClientService implements OnModuleInit, OnModuleDestroy {
   public readonly client: Client;
-  private logger = new Logger(DiscordClientService.name);
+  private readonly logger = new Logger(DiscordClientService.name);
 
   public commands = new Collection<string, AbstractCommand>();
 
@@ -26,5 +31,9 @@ export class DiscordClientService implements OnModuleInit {
     }
 
     await this.client.login(token);
+  }
+
+  async onModuleDestroy() {
+    await this.client.destroy();
   }
 }
