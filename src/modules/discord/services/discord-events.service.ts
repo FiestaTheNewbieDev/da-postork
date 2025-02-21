@@ -24,7 +24,7 @@ export class DiscordEventsService implements OnModuleInit {
         event = this.moduleRef.get(EventConstructor, { strict: false });
       } catch (error) {
         this.logger.error(
-          `Failed to get event instance: ${EventConstructor.name}`,
+          ERROR_MESSAGES['get-event-instance-failed'](EventConstructor.name),
         );
         console.error(error);
         continue;

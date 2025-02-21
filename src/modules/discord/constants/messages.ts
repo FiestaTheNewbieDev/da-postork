@@ -10,6 +10,10 @@ export const ERROR_MESSAGES = {
   'unsupported-channel-type': 'Unsupported channel type',
   'register-commands-failed': (devGuildId: string) =>
     `Failed to register commands in guild ${devGuildId}`,
+  'get-event-instance-failed': (constructorName: string) =>
+    `Failed to get event instance of ${constructorName}`,
+  'get-command-instance-failed': (constructorName: string) =>
+    `Failed to get command instance of ${constructorName}`,
 } as const;
 
 export const WARN_MESSAGES = {

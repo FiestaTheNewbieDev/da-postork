@@ -1,5 +1,5 @@
 import COMMANDS from '@discord/commands';
-import { MESSAGES } from '@discord/constants/messages';
+import { ERROR_MESSAGES, MESSAGES } from '@discord/constants/messages';
 import AbstractCommand from '@discord/misc/AbstractCommand';
 import { DiscordClientService } from '@discord/services/discord-client.service';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
@@ -21,7 +21,9 @@ export class DiscordCommandsService implements OnModuleInit {
         command = this.moduleRef.get(CommandConstructor, { strict: false });
       } catch (error) {
         this.logger.error(
-          `Failed to get command instance: ${CommandConstructor.name}`,
+          ERROR_MESSAGES['get-command-instance-failed'](
+            CommandConstructor.name,
+          ),
         );
         console.error(error);
         continue;
