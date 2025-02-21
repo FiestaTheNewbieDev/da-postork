@@ -12,6 +12,8 @@ import { Client, Collection, IntentsBitField } from 'discord.js';
 @Injectable()
 export class DiscordClientService implements OnModuleInit, OnModuleDestroy {
   public readonly client: Client;
+  private _isReady: boolean = false;
+
   private readonly logger = new Logger(DiscordClientService.name);
 
   public commands = new Collection<string, AbstractCommand>();
@@ -35,5 +37,13 @@ export class DiscordClientService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy() {
     await this.client.destroy();
+  }
+
+  public isReady(): boolean {
+    return this._isReady;
+  }
+
+  public setReady(value: boolean): void {
+    this._isReady = value;
   }
 }

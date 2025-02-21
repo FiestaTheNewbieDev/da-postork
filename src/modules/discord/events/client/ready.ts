@@ -22,8 +22,6 @@ export class ReadyEvent extends AbstractEvent {
   public execute() {
     const client = this.discordClientService.client;
 
-    this.logger.log(MESSAGES.ready(client.user?.username || 'UNKNOWN'));
-
     const devGuildId = this.configService.get<string>('DEV_GUILD_ID');
     if (!devGuildId) {
       this.logger.warn(WARN_MESSAGES['no-dev-guild-id']);
@@ -43,5 +41,8 @@ export class ReadyEvent extends AbstractEvent {
         );
         console.error(error);
       });
+
+    this.discordClientService.setReady(true);
+    this.logger.log(MESSAGES.ready(client.user?.username || 'UNKNOWN'));
   }
 }
