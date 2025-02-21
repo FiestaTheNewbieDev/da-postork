@@ -1,38 +1,67 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { MESSAGES } from '@warhammer-community/constants/messages';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
-import { News, NewsAPIResponse } from '@warhammer-community/types';
+import { WARHAMMER_COMMUNITY_API_URL } from '@warhammer-community/constants/url';
+import {
+  Category,
+  Collection,
+  GameSystem,
+  Locale,
+  News,
+  Paginate,
+  SortBy,
+  Topic,
+} from '@warhammer-community/types';
 import { firstValueFrom } from 'rxjs';
+import { InjectLogger } from '@modules/logger/inject-logger.decorator';
 
-const WEBSITE_BASE_URL = 'https://www.warhammer-community.com';
-const API_BASE_URL = `${WEBSITE_BASE_URL}/api`;
+interface IFetchNewsOptions {
+  category?: Category;
+  collections?: Collection[];
+  gameSystems?: GameSystem[];
+  index?: string;
+  locale?: Locale;
+  page?: number;
+  perPage?: number;
+  sortBy?: SortBy;
+  topics?: Topic[];
+}
+
+interface IFetchNewsResponse {
+  news: News[];
+  paginate: Paginate;
+}
 
 @Injectable()
 export class WarhammerCommunityService {
-  private readonly logger = new Logger(WarhammerCommunityService.name);
+  constructor(
+    private readonly httpService: HttpService,
+    @InjectLogger() private readonly logger: Logger,
+  ) {}
 
-  constructor(private readonly httpService: HttpService) {}
+  public async fetchNews(
+    options?: IFetchNewsOptions,
+  ): Promise<IFetchNewsResponse> {
+    const endpoint = `${WARHAMMER_COMMUNITY_API_URL}/search/news`;
 
-  public async fetchNews(): Promise<News[]> {
-    const url = `${API_BASE_URL}/search/news`;
+    this.logger.log(MESSAGES['fetching-news'](endpoint));
 
     const response = await firstValueFrom(
-      this.httpService.post<NewsAPIResponse>(url, {
-        category: '',
-        collections: ['articles', 'videos'],
-        game_systems: ['warhammer-40000'],
-        index: 'news',
-        locale: 'en-gb',
-        page: 0,
-        perPage: 10,
-        sortBy: 'date_desc',
-        topics: ['warhammer-40000'],
+      this.httpService.post<IFetchNewsResponse>(endpoint, {
+        category: options?.category || '',
+        collections: options?.collections || [Collection.ARTICLES],
+        game_systems: options?.gameSystems || [],
+        index: options?.index || 'news',
+        locale: options?.locale || Locale.EN_GB,
+        page: options?.page || 0,
+        perPage: options?.perPage || 16,
+        sortBy: options?.sortBy || SortBy.DATE_DESC,
+        topics: options?.topics || [],
       }),
     );
 
-    return response.data.news;
-  }
-
-  public composeUrl(uri: string, locale: string = 'en-gb'): string {
-    return `${WEBSITE_BASE_URL}/${locale}/${uri}`;
+    return response.data;
   }
 }
