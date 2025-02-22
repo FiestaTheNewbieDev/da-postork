@@ -1,11 +1,11 @@
 import { Logger, Type } from '@nestjs/common';
 
-export function createLogger(module: Type<any>, target: Type<any>) {
-  const providerName = target.name;
-  const context = `${module.name}: ${target.name}`;
+export function createLoggerProvider(moduleName: string, target: Type<any>) {
+  const token = `${target.name.toUpperCase()}_LOGGER`;
+  const context = `${moduleName}: ${target.name}`;
 
   return {
-    provide: providerName,
+    provide: token,
     useFactory: () => new Logger(context),
   };
 }

@@ -1,5 +1,6 @@
 import { ERROR_MESSAGES } from '@discord/constants/messages';
 import AbstractCommand from '@discord/misc/AbstractCommand';
+import { InjectLogger } from '@modules/logger/inject-logger.decorator';
 import {
   Injectable,
   Logger,
@@ -12,13 +13,13 @@ import { Client, Collection, IntentsBitField } from 'discord.js';
 @Injectable()
 export class DiscordClientService implements OnModuleInit, OnModuleDestroy {
   public readonly client: Client;
-  private _isReady: boolean = false;
-
-  private readonly logger = new Logger(DiscordClientService.name);
 
   public commands = new Collection<string, AbstractCommand>();
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectLogger() private readonly logger: Logger,
+  ) {
     this.client = new Client({
       intents: [IntentsBitField.Flags.Guilds],
     });
@@ -39,11 +40,9 @@ export class DiscordClientService implements OnModuleInit, OnModuleDestroy {
     await this.client.destroy();
   }
 
-  public isReady(): boolean {
-    return this._isReady;
-  }
-
-  public setReady(value: boolean): void {
-    this._isReady = value;
+  async waitClient(): Promise<boolean> {
+    return new Promise((resolve) =>
+      this.client.once('ready', () => resolve(true)),
+    );
   }
 }

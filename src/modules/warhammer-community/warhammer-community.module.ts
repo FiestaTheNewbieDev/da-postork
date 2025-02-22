@@ -1,18 +1,19 @@
 import { WarhammerCommunityService } from '@warhammer-community/services/warhammer-community.service';
 import { HttpModule } from '@nestjs/axios';
-import { Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { PollingService } from '@warhammer-community/services/polling.service';
 import { LoggerModule } from '@modules/logger/logger.module';
 
-const PROVIDERS = [WarhammerCommunityService, PollingService];
+const PROVIDERS = [WarhammerCommunityService];
 
-@Global()
 @Module({
   imports: [
     HttpModule,
     ScheduleModule.forRoot(),
-    LoggerModule.forRoot(WarhammerCommunityModule, PROVIDERS),
+    LoggerModule.forRoot({
+      moduleName: WarhammerCommunityModule.name,
+      providers: PROVIDERS,
+    }),
   ],
   providers: PROVIDERS,
   exports: [WarhammerCommunityService],

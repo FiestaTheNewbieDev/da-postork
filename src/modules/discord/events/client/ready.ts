@@ -5,16 +5,16 @@ import {
 } from '@discord/constants/messages';
 import AbstractEvent from '@discord/misc/AbstractEvent';
 import { DiscordClientService } from '@discord/services/discord-client.service';
+import { InjectLogger } from '@modules/logger/inject-logger.decorator';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ReadyEvent extends AbstractEvent {
-  private readonly logger = new Logger(ReadyEvent.name);
-
   constructor(
     private readonly discordClientService: DiscordClientService,
     private readonly configService: ConfigService,
+    @InjectLogger() private readonly logger: Logger,
   ) {
     super('ready', true);
   }
@@ -42,7 +42,6 @@ export class ReadyEvent extends AbstractEvent {
         console.error(error);
       });
 
-    this.discordClientService.setReady(true);
     this.logger.log(MESSAGES.ready(client.user?.username || 'UNKNOWN'));
   }
 }
