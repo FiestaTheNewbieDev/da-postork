@@ -1,12 +1,11 @@
 import * as Permissions from '@modules/discord/constants/permissions';
-import { DiscordClientService } from '@modules/discord/services/discord-client.service';
 import * as Constants from '@modules/warhammer-community/warhammer-community.constants';
 import { WarhammerCommunityService } from '@modules/warhammer-community/warhammer-community.service';
 import * as Types from '@modules/warhammer-community/warhammer-community.types';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { GuildChannel, Message } from 'discord.js';
+import { Client, GuildChannel, Message } from 'discord.js';
 
 @Processor(Constants.WARHAMMER_COMMUNITY_QUEUE, {
   concurrency: 4,
@@ -15,7 +14,7 @@ export class WarhammerCommunityConsumer extends WorkerHost {
   private readonly logger = new Logger(WarhammerCommunityConsumer.name);
 
   constructor(
-    private readonly discordClientService: DiscordClientService,
+    private readonly client: Client,
     private readonly warhammerCommunityService: WarhammerCommunityService,
   ) {
     super();
@@ -28,16 +27,14 @@ export class WarhammerCommunityConsumer extends WorkerHost {
       `Processing job for channel ${channelId} with article IDs: ${articleIds.join(', ')}`,
     );
 
-    const channel = this.discordClientService.getChannel(channelId);
+    const channel = this.client.channels.cache.get(channelId) ?? null;
     if (!channel) throw new Error(`Channel ${channelId} not found`);
     if (!channel.isSendable())
       throw new Error(`Channel ${channelId} is not sendable`);
 
     if (
       channel instanceof GuildChannel &&
-      !channel
-        .permissionsFor(this.discordClientService.client.user!)
-        ?.has(Permissions.SEND_EMBED)
+      !channel.permissionsFor(this.client.user!)?.has(Permissions.SEND_EMBED)
     ) {
       throw new Error(
         `Missing permissions to send embeds in channel ${channelId}`,
@@ -58,7 +55,7 @@ export class WarhammerCommunityConsumer extends WorkerHost {
             if (
               channel instanceof GuildChannel &&
               !channel
-                .permissionsFor(this.discordClientService.client.user!)
+                .permissionsFor(this.client.user!)
                 ?.has(Permissions.ADD_REACTIONS)
             )
               return;

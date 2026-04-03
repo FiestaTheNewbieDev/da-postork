@@ -1,27 +1,29 @@
-import { ReadyEvent } from '@modules/discord/events/client/ready.event';
-import { InteractionCreateEvent } from '@modules/discord/events/guild/interaction-create.event';
-import { MessageCreateEvent } from '@modules/discord/events/guild/message-create.event';
-import { DiscordClientService } from '@modules/discord/services/discord-client.service';
-import { DiscordCommandsService } from '@modules/discord/services/discord-commands.service';
-import { DiscordDeployService } from '@modules/discord/services/discord-deploy.service';
-import { DiscordEventsService } from '@modules/discord/services/discord-events.service';
-import { DiscordSlashCommandsService } from '@modules/discord/services/discord-slash-commands.service';
+import { ConfigModule } from '@modules/config/config.module';
+import { ConfigService } from '@modules/config/config.service';
+import { DiscordListenersModule } from '@modules/discord/listeners/discord-listeners.module';
 import { Module } from '@nestjs/common';
-import { DiscoveryModule } from '@nestjs/core';
+import { IntentsBitField } from 'discord.js';
+import { NecordModule } from 'necord';
 
 @Module({
-  imports: [DiscoveryModule],
-  providers: [
-    DiscordClientService,
-    DiscordEventsService,
-    DiscordCommandsService,
-    DiscordSlashCommandsService,
-    DiscordDeployService,
-    // Events
-    ReadyEvent,
-    MessageCreateEvent,
-    InteractionCreateEvent,
+  imports: [
+    NecordModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const devGuildId = configService.get('DEV_GUILD_ID');
+        return {
+          token: configService.get('DISCORD_BOT_TOKEN'),
+          intents: [
+            IntentsBitField.Flags.Guilds,
+            IntentsBitField.Flags.GuildMessages,
+            IntentsBitField.Flags.MessageContent,
+          ],
+          development: devGuildId ? [devGuildId] : undefined,
+        };
+      },
+    }),
+    DiscordListenersModule,
   ],
-  exports: [DiscordClientService],
 })
 export class DiscordModule {}

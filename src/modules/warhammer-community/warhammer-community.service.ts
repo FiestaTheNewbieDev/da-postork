@@ -1,6 +1,5 @@
 import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
 import { EntityManager } from '@mikro-orm/core';
-import { DiscordClientService } from '@modules/discord/services/discord-client.service';
 import { WarhammerCommunityApi } from '@modules/warhammer-community/warhammer-community.api';
 import * as Constants from '@modules/warhammer-community/warhammer-community.constants';
 import * as Types from '@modules/warhammer-community/warhammer-community.types';
@@ -8,7 +7,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Queue } from 'bullmq';
-import { EmbedBuilder } from 'discord.js';
+import { Client, EmbedBuilder } from 'discord.js';
 
 @Injectable()
 export class WarhammerCommunityService implements OnModuleInit {
@@ -17,7 +16,7 @@ export class WarhammerCommunityService implements OnModuleInit {
   constructor(
     private readonly api: WarhammerCommunityApi,
     private readonly em: EntityManager,
-    private readonly discordClientService: DiscordClientService,
+    private readonly client: Client,
     @InjectQueue(Constants.WARHAMMER_COMMUNITY_QUEUE)
     private readonly queue: Queue<Types.WarhammerCommunityJobData>,
   ) {}
@@ -81,8 +80,8 @@ export class WarhammerCommunityService implements OnModuleInit {
 
     this.logger.log(`Saved ${articles.length} new article(s)`);
 
-    const channelIds = this.discordClientService
-      .getTextChannels()
+    const channelIds = [...this.client.channels.cache.values()]
+      .filter((channel) => channel.isTextBased())
       .map((channel) => channel.id);
     const articleIds = articles.map((a) => a.id as number);
 

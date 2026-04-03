@@ -1,6 +1,5 @@
 import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { DiscordModule } from '@modules/discord/discord.module';
 import { WarhammerCommunityApi } from '@modules/warhammer-community/warhammer-community.api';
 import * as Constants from '@modules/warhammer-community/warhammer-community.constants';
 import { WarhammerCommunityConsumer } from '@modules/warhammer-community/warhammer-community.consumer';
@@ -26,7 +25,6 @@ import { Module } from '@nestjs/common';
         removeOnFail: { count: 500, age: 7 * 24 * 3600 },
       },
     }),
-    DiscordModule,
   ],
   providers: [
     WarhammerCommunityService,
