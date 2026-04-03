@@ -1,0 +1,76 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    name: Pull latest code
+    runs-on: [self-hosted, production]
+    steps:
+      - name: 🔄 Pull repository
+        working-directory: ${{ vars.WORKDIR }}
+        run: git pull origin main
+
+  install:
+    name: Install dependencies
+    needs: pull
+    runs-on: [self-hosted, production]
+    steps:
+      - name: 📦 Install dependencies
+        working-directory: ${{ vars.WORKDIR }}
+        run: npm ci
+
+  migrate:
+    name: Run database migrations
+    needs: install
+    runs-on: [self-hosted, production]
+    steps:
+      - name: 🗄️ Run migrations
+        working-directory: ${{ vars.WORKDIR }}
+        run: npm run migrate
+
+  deploy:
+    name: Deploy
+    needs: migrate
+    runs-on: [self-hosted, production]
+    steps:
+      - name: 🚀 Restart app
+        working-directory: ${{ vars.WORKDIR }}
+        run: docker compose up app --build -d
+
+      - name: ✅ Verify deployment
+        working-directory: ${{ vars.WORKDIR }}
+        run: |
+          echo "Waiting for bot to be ready..."
+          if ! timeout 60 bash -c 'until docker compose logs app 2>&1 | grep -q "Ready as"; do sleep 2; done'; then
+            echo "Bot failed to connect to Discord!"
+            exit 1
+          fi
+          echo "Bot is ready!"
+
+      - name: ✅ Deployment summary (success)
+        if: success()
+        run: echo "### ✅ Deployed to production" >> $GITHUB_STEP_SUMMARY
+
+      - name: ❌ Deployment summary (failure)
+        if: failure()
+        run: echo "### ❌ Deployment failed" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📝 Deployment summary
+        if: always()
+        run: |
+          echo "|  |  |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **By** | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📋 Dump logs on failure
+        if: failure()
+        working-directory: ${{ vars.WORKDIR }}
+        run: docker compose logs app --tail=50 >> $GITHUB_STEP_SUMMARY

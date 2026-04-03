@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master, develop, development]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: [self-hosted, ci]
+    container: node:22
+    permissions:
+      contents: read
+
+    steps:
+      - name: 🔄 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: '⚙️ Node setup'
+        uses: ./.github/actions/node-setup
+        with:
+          node-version: '22'
+
+      - name: ✅ Run linter
+        run: npm run lint
+
+      - name: 📋 Dump lint logs on failure
+        if: failure()
+        run: cat $GITHUB_WORKSPACE/lint.log
+
+  build:
+    name: Build
+    runs-on: [self-hosted, ci]
+    container: node:22
+    permissions:
+      contents: read
+    needs: [lint]
+
+    steps:
+      - name: 🔄 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: '⚙️ Node setup'
+        uses: ./.github/actions/node-setup
+        with:
+          node-version: '22'
+
+      - name: 🏗️ Build project
+        run: npm run build
+
+      - name: 📋 Dump build logs on failure
+        if: failure()
+        run: cat $GITHUB_WORKSPACE/build.log
