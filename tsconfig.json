@@ -13,12 +13,14 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "paths": {
       "@entities/*": ["./src/entities/*"],
+      "@sources/*": ["./src/modules/sources/*"],
       "@modules/*": ["./src/modules/*"],
       "@utils/*": ["./src/utils/*"],
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "package.json": ["./package.json"]
     },
     "incremental": true,
     "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo",
@@ -28,7 +30,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["node"]
+    "types": ["node", "jest"]
   },
-  "exclude": ["node_modules", "dist", "migrations", "mikro-orm.config.ts"]
+  "include": ["src", "jest.setup.ts", "jest.config.ts"]
 }

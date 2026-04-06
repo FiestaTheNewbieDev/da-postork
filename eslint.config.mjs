@@ -25,6 +25,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ['**/*.spec.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
+    },
+  },
+  {
     rules: {
       '@typescript-eslint/no-deprecated': 'warn',
       '@typescript-eslint/no-explicit-any': 'warn',

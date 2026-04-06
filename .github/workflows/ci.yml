@@ -51,3 +51,47 @@ jobs:
       - name: 📋 Dump build logs on failure
         if: failure()
         run: cat $GITHUB_WORKSPACE/build.log
+
+  test:
+    name: Test
+    runs-on: [self-hosted, ci]
+    container: node:22
+    permissions:
+      contents: read
+
+    steps:
+      - name: 🔄 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: '⚙️ Node setup'
+        uses: ./.github/actions/node-setup
+        with:
+          node-version: '22'
+
+      - name: ✅ Run tests
+        run: |
+          npm test > $GITHUB_WORKSPACE/test.log 2>&1
+          cat $GITHUB_WORKSPACE/test.log
+
+      - name: ✅ Test summary (success)
+        if: success()
+        run: echo "### ✅ All tests passed" >> $GITHUB_STEP_SUMMARY
+
+      - name: ❌ Test summary (failure)
+        if: failure()
+        run: echo "### ❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📝 Test summary
+        if: always()
+        run: |
+          echo "|  |  |" >> $GITHUB_STEP_SUMMARY
+          echo "|--|--|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **By** | \`${{ github.actor }}\` |" >> $GITHUB_STEP_SUMMARY
+          if [ -f "$GITHUB_WORKSPACE/test.log" ]; then
+            echo "### 📋 Test Logs" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat $GITHUB_WORKSPACE/test.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
