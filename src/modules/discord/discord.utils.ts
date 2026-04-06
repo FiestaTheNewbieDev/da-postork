@@ -8,6 +8,7 @@ export const fmt = {
   bold: (v: string) => `**${v}**`,
 
   // Custom formatting
-  source: (source: SubscriptionSource) => `\`${SOURCES_MAP[source].label}\``,
+  source: (source: SubscriptionSource) =>
+    `[\`${SOURCES_MAP[source].label}\`](${SOURCES_MAP[source].url})`,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies Record<string, (v: any) => string>;
