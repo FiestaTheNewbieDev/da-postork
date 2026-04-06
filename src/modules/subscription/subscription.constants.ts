@@ -4,7 +4,7 @@ import {
   SubscriptionSource,
 } from '@entities/subscription.entity';
 import { fmt as discordFmt } from '@modules/discord/discord.utils';
-import { fmt as loggerFmt } from '@utils/logger-fmt';
+import { fmt as loggerFmt } from '@utils/logger.utils';
 
 export const SOURCES_MAP = {
   [SubscriptionSource.WarhammerCommunity]: {
@@ -14,12 +14,12 @@ export const SOURCES_MAP = {
     value: SubscriptionSource.WarhammerCommunity,
   },
   [SubscriptionSource.CodexYGO]: {
-    label: 'Codex YGO',
-    description: null,
+    label: 'CodexYGO',
+    description: "Le site n° 1 sur l'information pour Yu-Gi-Oh! en France.",
     url: 'https://codexygo.fr/',
     value: SubscriptionSource.CodexYGO,
   },
-} satisfies {
+} as const satisfies {
   [K in SubscriptionSource]: {
     label: string;
     description: Nullable<string>;
