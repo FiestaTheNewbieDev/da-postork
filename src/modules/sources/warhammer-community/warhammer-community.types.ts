@@ -1,5 +1,3 @@
-import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
-
 export type Collection = 'articles';
 
 export type Locale = 'en-gb' | 'de-de';
@@ -113,9 +111,4 @@ export type GetNewsPayload = {
 
 export type GetNewsResponse = {
   news: News[];
-};
-
-export type WarhammerCommunityJobData = {
-  channelId: string;
-  articleIds: WarhammerCommunityArticle['id'][];
 };

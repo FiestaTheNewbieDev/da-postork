@@ -1,4 +1,4 @@
-import { ERROR_MESSAGES as DISCORD_ERROR_MESSAGES } from '@modules/discord/constants/messages';
+import { ERROR_MESSAGES as DISCORD_ERROR_MESSAGES } from '@modules/discord/discord.constants';
 import { z } from 'zod';
 
 export const configSchema = z.object({
@@ -7,7 +7,6 @@ export const configSchema = z.object({
   DISCORD_BOT_TOKEN: z
     .string()
     .nonempty({ message: DISCORD_ERROR_MESSAGES.noDiscordBotToken() }),
-  COMMAND_PREFIX: z.string().default('!'),
   DEV_GUILD_ID: z.string().optional(),
 
   POSTGRES_HOST: z.string().nonempty(),

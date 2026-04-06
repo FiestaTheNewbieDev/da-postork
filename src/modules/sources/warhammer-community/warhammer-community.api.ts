@@ -1,6 +1,6 @@
-import * as Types from '@modules/warhammer-community/warhammer-community.types';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import * as Types from '@sources/warhammer-community/warhammer-community.types';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()

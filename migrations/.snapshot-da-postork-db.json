@@ -4,6 +4,81 @@
   "tables": [
     {
       "columns": {
+        "source": {
+          "name": "source",
+          "type": "subscription_source",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": ["WARHAMMER_COMMUNITY", "CODEX_YGO"],
+          "mappedType": "unknown",
+          "nativeEnumName": "subscription_source"
+        },
+        "channel_id": {
+          "name": "channel_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "name": "subscription",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": ["source", "channel_id"],
+          "composite": true,
+          "constraint": false,
+          "keyName": "subscription_pkey",
+          "unique": true,
+          "primary": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {
+        "subscription_source": {
+          "name": "subscription_source",
+          "schema": "public",
+          "items": ["WARHAMMER_COMMUNITY", "CODEX_YGO"]
+        }
+      },
+      "comment": null
+    },
+    {
+      "columns": {
         "id": {
           "name": "id",
           "type": "int4",
@@ -219,9 +294,21 @@
       ],
       "checks": [],
       "foreignKeys": {},
-      "nativeEnums": {},
+      "nativeEnums": {
+        "subscription_source": {
+          "name": "subscription_source",
+          "schema": "public",
+          "items": ["WARHAMMER_COMMUNITY", "CODEX_YGO"]
+        }
+      },
       "comment": null
     }
   ],
-  "nativeEnums": {}
+  "nativeEnums": {
+    "subscription_source": {
+      "name": "subscription_source",
+      "schema": "public",
+      "items": ["WARHAMMER_COMMUNITY", "CODEX_YGO"]
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { AbstractArticle } from '@entities/abstract-article';
+import { AbstractArticle } from '@entities/abstract-article.entity';
 import { Entity, Filter, Property, Unique } from '@mikro-orm/core';
 
 @Entity({

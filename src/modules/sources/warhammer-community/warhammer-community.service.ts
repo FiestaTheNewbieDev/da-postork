@@ -1,0 +1,107 @@
+import { SubscriptionSource } from '@entities/subscription.entity';
+import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
+import { MikroORM } from '@mikro-orm/core';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { EntityRepository } from '@mikro-orm/postgresql';
+import { SubscriptionService } from '@modules/subscription/subscription.service';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable } from '@nestjs/common';
+import { AbstractSourceService } from '@sources/abstract-source.service';
+import { SourceJobData } from '@sources/sources.types';
+import { WarhammerCommunityApi } from '@sources/warhammer-community/warhammer-community.api';
+import * as Constants from '@sources/warhammer-community/warhammer-community.constants';
+import * as Types from '@sources/warhammer-community/warhammer-community.types';
+import { Queue } from 'bullmq';
+import { EmbedBuilder } from 'discord.js';
+
+@Injectable()
+export class WarhammerCommunityService extends AbstractSourceService<
+  WarhammerCommunityArticle,
+  Types.News
+> {
+  constructor(
+    private readonly api: WarhammerCommunityApi,
+    @InjectRepository(WarhammerCommunityArticle)
+    private readonly articleRepo: EntityRepository<WarhammerCommunityArticle>,
+    orm: MikroORM,
+    subscriptionService: SubscriptionService,
+    @InjectQueue(Constants.WARHAMMER_COMMUNITY_QUEUE)
+    queue: Queue<SourceJobData>,
+  ) {
+    super(orm, subscriptionService, queue);
+  }
+
+  protected async getUnsavedNews(): Promise<Types.News[]> {
+    const { news } = await this.api.getNews();
+
+    const existing = await this.articleRepo.find({
+      $and: [
+        { warhammerCommunityId: { $in: news.map((n) => n.id) } },
+        { warhammerCommunityUuid: { $in: news.map((n) => n.uuid) } },
+      ],
+    });
+
+    const existingCombos = new Set(
+      existing.map(
+        (a) => `${a.warhammerCommunityId}__${a.warhammerCommunityUuid}`,
+      ),
+    );
+
+    return news.filter((n) => !existingCombos.has(`${n.id}__${n.uuid}`));
+  }
+
+  protected async saveNews(
+    news: Types.News[],
+  ): Promise<WarhammerCommunityArticle[]> {
+    const articles = news.map((n) =>
+      this.articleRepo.create({
+        warhammerCommunityId: n.id,
+        warhammerCommunityUuid: n.uuid,
+        warhammerCommunitySlug: n.slug,
+        title: n.title,
+        excerpt: n.excerpt,
+        locale: n.site,
+        thumbnailPath: n.image?.path || null,
+        publishedAt: new Date(n.date),
+      }),
+    );
+
+    await this.articleRepo.getEntityManager().flush();
+
+    return articles;
+  }
+
+  protected getSubscriptionSource(): SubscriptionSource {
+    return SubscriptionSource.WarhammerCommunity;
+  }
+
+  public async getArticlesByIds(
+    ids: number[],
+  ): Promise<WarhammerCommunityArticle[]> {
+    return this.articleRepo.find(
+      { id: { $in: ids } },
+      { orderBy: { publishedAt: 'asc' } },
+    );
+  }
+
+  public static buildArticleUrl(article: WarhammerCommunityArticle): string {
+    return `https://www.warhammer-community.com/${article.locale}/articles/${article.warhammerCommunityUuid}/${article.warhammerCommunitySlug}/`;
+  }
+
+  public static buildAssetUrl(assetPath: string): string {
+    return `https://assets.warhammer-community.com/${assetPath}`;
+  }
+
+  public buildEmbed(article: WarhammerCommunityArticle): EmbedBuilder {
+    return new EmbedBuilder()
+      .setTitle(article.title)
+      .setDescription(article.excerpt || null)
+      .setImage(
+        article.thumbnailPath
+          ? WarhammerCommunityService.buildAssetUrl(article.thumbnailPath)
+          : null,
+      )
+      .setURL(WarhammerCommunityService.buildArticleUrl(article))
+      .addFields({ name: '\u200B', value: article.publishedAt.toDateString() });
+  }
+}

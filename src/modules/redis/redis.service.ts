@@ -1,4 +1,5 @@
 import { ConfigService } from '@modules/config/config.service';
+import { MESSAGES } from '@modules/redis/redis.constants';
 import * as Types from '@modules/redis/redis.types';
 import {
   Injectable,
@@ -18,10 +19,8 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
       url: `redis://${this.configService.get('REDIS_HOST')}:${this.configService.get('REDIS_PORT')}`,
     });
 
-    this.client.on('connect', () => this.logger.log('Redis Client Connected'));
-    this.client.on('error', (err) =>
-      this.logger.error('Redis Client Error', err),
-    );
+    this.client.on('connect', () => this.logger.log(MESSAGES.ready()));
+    this.client.on('error', (err) => this.logger.error(err));
   }
 
   async onModuleInit(): Promise<void> {

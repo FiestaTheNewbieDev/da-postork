@@ -1,23 +1,27 @@
 import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { WarhammerCommunityApi } from '@modules/warhammer-community/warhammer-community.api';
-import * as Constants from '@modules/warhammer-community/warhammer-community.constants';
-import { WarhammerCommunityConsumer } from '@modules/warhammer-community/warhammer-community.consumer';
-import { WarhammerCommunityService } from '@modules/warhammer-community/warhammer-community.service';
+import { DiscordModule } from '@modules/discord/discord.module';
+import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { WarhammerCommunityApi } from '@sources/warhammer-community/warhammer-community.api';
+import * as Constants from '@sources/warhammer-community/warhammer-community.constants';
+import { WarhammerCommunityConsumer } from '@sources/warhammer-community/warhammer-community.consumer';
+import { WarhammerCommunityService } from '@sources/warhammer-community/warhammer-community.service';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([WarhammerCommunityArticle]),
+    SubscriptionModule,
     HttpModule.register({
-      baseURL: 'https://www.warhammer-community.com/api',
+      baseURL: Constants.WARHAMMER_COMMUNITY_API_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
       },
       timeout: 5000,
     }),
+    DiscordModule,
+    MikroOrmModule.forFeature([WarhammerCommunityArticle]),
     BullModule.registerQueue({
       name: Constants.WARHAMMER_COMMUNITY_QUEUE,
       defaultJobOptions: {

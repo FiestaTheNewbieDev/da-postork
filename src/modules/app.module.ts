@@ -5,10 +5,11 @@ import { ConfigService } from '@modules/config/config.service';
 import { DiscordModule } from '@modules/discord/discord.module';
 import { RedisModule } from '@modules/redis/redis.module';
 import { RedisService } from '@modules/redis/redis.service';
-import { WarhammerCommunityModule } from '@modules/warhammer-community/warhammer-community.module';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SourcesModule } from '@sources/sources.module';
 
 @Module({
   imports: [
@@ -34,8 +35,9 @@ import { ScheduleModule } from '@nestjs/schedule';
         autoLoadEntities: true,
       }),
     }),
+    EventEmitterModule.forRoot(),
     DiscordModule,
-    WarhammerCommunityModule,
+    SourcesModule,
   ],
 })
 export class AppModule {}

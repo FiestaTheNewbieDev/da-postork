@@ -1,6 +1,6 @@
 import { ConfigModule } from '@modules/config/config.module';
 import { ConfigService } from '@modules/config/config.service';
-import { DiscordListenersModule } from '@modules/discord/listeners/discord-listeners.module';
+import { DiscordEventsModule } from '@modules/discord/events/discord-events.module';
 import { Module } from '@nestjs/common';
 import { IntentsBitField } from 'discord.js';
 import { NecordModule } from 'necord';
@@ -19,11 +19,14 @@ import { NecordModule } from 'necord';
             IntentsBitField.Flags.GuildMessages,
             IntentsBitField.Flags.MessageContent,
           ],
-          development: devGuildId ? [devGuildId] : undefined,
+          development:
+            configService.get('NODE_ENV') === 'development' && devGuildId
+              ? [devGuildId]
+              : undefined,
         };
       },
     }),
-    DiscordListenersModule,
+    DiscordEventsModule,
   ],
 })
 export class DiscordModule {}
