@@ -40,10 +40,17 @@ export class SubscriptionCommands {
     name: 'subscribe',
     description: 'Subscribe this channel to a source',
   })
-  @CreateRequestContext()
   async onSubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
     @Options() { source }: SourceDto,
+  ) {
+    return this.handleSubscribe(interaction, source);
+  }
+
+  @CreateRequestContext()
+  private async handleSubscribe(
+    interaction: ChatInputCommandInteraction,
+    source: SubscriptionSource,
   ) {
     try {
       await this.subscriptionService.subscribe(source, interaction.channelId);
@@ -83,10 +90,17 @@ export class SubscriptionCommands {
     name: 'unsubscribe',
     description: 'Unsubscribe this channel from a source',
   })
-  @CreateRequestContext()
   async onUnsubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
     @Options() { source }: SourceDto,
+  ) {
+    return this.handleUnsubscribe(interaction, source);
+  }
+
+  @CreateRequestContext()
+  private async handleUnsubscribe(
+    interaction: ChatInputCommandInteraction,
+    source: SubscriptionSource,
   ) {
     try {
       await this.subscriptionService.unsubscribe(source, interaction.channelId);
@@ -128,10 +142,14 @@ export class SubscriptionCommands {
     name: 'subscriptions',
     description: 'List this channel subscriptions',
   })
-  @CreateRequestContext()
   async onSubscriptions(
     @Context() [interaction]: [ChatInputCommandInteraction],
   ) {
+    return this.handleSubscriptions(interaction);
+  }
+
+  @CreateRequestContext()
+  private async handleSubscriptions(interaction: ChatInputCommandInteraction) {
     try {
       const subscriptions =
         await this.subscriptionService.getChannelSubscriptions(
