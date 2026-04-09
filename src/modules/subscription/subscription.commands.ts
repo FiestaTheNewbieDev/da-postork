@@ -1,4 +1,5 @@
 import { SubscriptionSource } from '@entities/subscription.entity';
+import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
 import { ManageChannelsGuard } from '@modules/discord/guards/manage-channels.guard';
 import * as Constants from '@modules/subscription/subscription.constants';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
@@ -29,13 +30,17 @@ class SourceDto {
 export class SubscriptionCommands {
   private readonly logger = new Logger(SubscriptionCommands.name);
 
-  constructor(private readonly subscriptionService: SubscriptionService) {}
+  constructor(
+    private readonly subscriptionService: SubscriptionService,
+    protected readonly orm: MikroORM,
+  ) {}
 
   @UseGuards(ManageChannelsGuard)
   @SlashCommand({
     name: 'subscribe',
     description: 'Subscribe this channel to a source',
   })
+  @CreateRequestContext()
   async onSubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
     @Options() { source }: SourceDto,
@@ -78,6 +83,7 @@ export class SubscriptionCommands {
     name: 'unsubscribe',
     description: 'Unsubscribe this channel from a source',
   })
+  @CreateRequestContext()
   async onUnsubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
     @Options() { source }: SourceDto,
@@ -122,6 +128,7 @@ export class SubscriptionCommands {
     name: 'subscriptions',
     description: 'List this channel subscriptions',
   })
+  @CreateRequestContext()
   async onSubscriptions(
     @Context() [interaction]: [ChatInputCommandInteraction],
   ) {
