@@ -1,5 +1,6 @@
 import { CodexYGOArticle } from '@entities/codexygo-article.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
+import { ConfigService } from '@modules/config/config.service';
 import { DiscordModule } from '@modules/discord/discord.module';
 import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
@@ -13,12 +14,16 @@ import { CodexYGOService } from '@sources/codexygo/codexygo.service';
 @Module({
   imports: [
     SubscriptionModule,
-    HttpModule.register({
-      baseURL: Constants.CODEXYGO_API_BASE_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      timeout: 5000,
+    HttpModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        baseURL: Constants.CODEXYGO_API_BASE_URL,
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': config.get('USER_AGENT'),
+        },
+        timeout: 5000,
+      }),
     }),
     DiscordModule,
     MikroOrmModule.forFeature([CodexYGOArticle]),
