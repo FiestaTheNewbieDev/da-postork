@@ -4,19 +4,21 @@ import {
   SubscriptionSource,
 } from '@entities/subscription.entity';
 import { fmt as discordFmt } from '@modules/discord/discord.utils';
+import * as CodexYGOConstants from '@sources/codexygo/codexygo.constants';
+import * as WarhammerCommunityConstants from '@sources/warhammer-community/warhammer-community.constants';
 import { fmt as loggerFmt } from '@utils/logger.utils';
 
 export const SOURCES_MAP = {
   [SubscriptionSource.WarhammerCommunity]: {
-    label: 'Warhammer Community',
+    label: WarhammerCommunityConstants.WARHAMMER_COMMUNITY_LABEL,
     description: 'The essential Warhammer news and features site',
-    url: 'https://www.warhammer-community.com/',
+    url: WarhammerCommunityConstants.WARHAMMER_COMMUNITY_WEBSITE_URL,
     value: SubscriptionSource.WarhammerCommunity,
   },
   [SubscriptionSource.CodexYGO]: {
-    label: 'CodexYGO',
+    label: CodexYGOConstants.CODEXYGO_LABEL,
     description: "Le site n° 1 sur l'information pour Yu-Gi-Oh! en France.",
-    url: 'https://codexygo.fr/',
+    url: CodexYGOConstants.CODEXYGO_WEBSITE_BASE_URL,
     value: SubscriptionSource.CodexYGO,
   },
 } as const satisfies {

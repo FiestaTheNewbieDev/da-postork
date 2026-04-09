@@ -1,4 +1,4 @@
-import { CodexYGOArticle } from '@entities/codexygo-article.entity';
+import * as Entities from '@entities/codexygo';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ConfigService } from '@modules/config/config.service';
 import { DiscordModule } from '@modules/discord/discord.module';
@@ -17,7 +17,7 @@ import { CodexYGOService } from '@sources/codexygo/codexygo.service';
     HttpModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        baseURL: Constants.CODEXYGO_API_BASE_URL,
+        baseURL: Constants.CODEXYGO_WEBSITE_BASE_URL,
         headers: {
           'Content-Type': 'application/json',
           'User-Agent': config.get('USER_AGENT'),
@@ -26,7 +26,7 @@ import { CodexYGOService } from '@sources/codexygo/codexygo.service';
       }),
     }),
     DiscordModule,
-    MikroOrmModule.forFeature([CodexYGOArticle]),
+    MikroOrmModule.forFeature(Object.values(Entities)),
     BullModule.registerQueue({
       name: Constants.CODEXYGO_QUEUE,
       defaultJobOptions: {

@@ -3,6 +3,6 @@ import { CodexYGOModule } from '@sources/codexygo/codexygo.module';
 import { WarhammerCommunityModule } from '@sources/warhammer-community/warhammer-community.module';
 
 @Module({
-  imports: [WarhammerCommunityModule, CodexYGOModule],
+  imports: [CodexYGOModule, WarhammerCommunityModule],
 })
 export class SourcesModule {}

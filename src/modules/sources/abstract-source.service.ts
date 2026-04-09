@@ -35,7 +35,10 @@ export abstract class AbstractSourceService<
       if (unsavedNews.length === 0) {
         this.logger.log(Constants.MESSAGES.noNewArticles());
         return;
-      }
+      } else
+        this.logger.log(
+          Constants.MESSAGES.foundNewArticles(unsavedNews.length),
+        );
 
       const articles = await this.saveNews(unsavedNews);
 

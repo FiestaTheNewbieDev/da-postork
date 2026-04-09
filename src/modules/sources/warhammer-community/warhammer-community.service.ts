@@ -85,11 +85,15 @@ export class WarhammerCommunityService extends AbstractSourceService<
   }
 
   public static buildArticleUrl(article: WarhammerCommunityArticle): string {
-    return `https://www.warhammer-community.com/${article.locale}/articles/${article.warhammerCommunityUuid}/${article.warhammerCommunitySlug}/`;
+    const url = new URL(Constants.WARHAMMER_COMMUNITY_WEBSITE_URL);
+    url.pathname = `/${article.locale}/articles/${article.warhammerCommunityUuid}/${article.warhammerCommunitySlug}/`;
+    return url.toString();
   }
 
   public static buildAssetUrl(assetPath: string): string {
-    return `https://assets.warhammer-community.com/${assetPath}`;
+    const url = new URL('https://assets.warhammer-community.com');
+    url.pathname = `/${assetPath}`;
+    return url.toString();
   }
 
   public buildEmbed(article: WarhammerCommunityArticle): EmbedBuilder {

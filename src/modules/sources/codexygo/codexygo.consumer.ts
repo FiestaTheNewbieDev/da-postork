@@ -1,4 +1,4 @@
-import { CodexYGOArticle } from '@entities/codexygo-article.entity';
+import { CodexYGOArticle } from '@entities/codexygo';
 import { MikroORM } from '@mikro-orm/core';
 import { Processor } from '@nestjs/bullmq';
 import { AbstractSourceConsumer } from '@sources/abstract-source.consumer';
