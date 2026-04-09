@@ -181,9 +181,9 @@ export class SubscriptionCommands {
         content: Constants.REPLIES.subscriptionsError(interaction.channelId),
         ephemeral: true,
       });
-      throw new Error(
+      this.logger.error(
         Constants.ERROR_MESSAGES.subscriptionsError(interaction.channelId),
-        { cause: error },
+        error,
       );
     }
   }
