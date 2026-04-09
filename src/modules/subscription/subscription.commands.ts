@@ -70,7 +70,7 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      else
+      else {
         await interaction.reply({
           content: Constants.REPLIES.subscribeError(
             interaction.channelId,
@@ -78,10 +78,14 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      throw new Error(
-        Constants.ERROR_MESSAGES.subscribeError(interaction.channelId, source),
-        { cause: error },
-      );
+        this.logger.error(
+          Constants.ERROR_MESSAGES.subscribeError(
+            interaction.channelId,
+            source,
+          ),
+          error,
+        );
+      }
     }
   }
 
@@ -120,7 +124,7 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      else
+      else {
         await interaction.reply({
           content: Constants.REPLIES.unsubscribeError(
             interaction.channelId,
@@ -128,13 +132,14 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      throw new Error(
-        Constants.ERROR_MESSAGES.unsubscribeError(
-          interaction.channelId,
-          source,
-        ),
-        { cause: error },
-      );
+        this.logger.error(
+          Constants.ERROR_MESSAGES.unsubscribeError(
+            interaction.channelId,
+            source,
+          ),
+          error,
+        );
+      }
     }
   }
 
