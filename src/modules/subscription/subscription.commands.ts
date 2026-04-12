@@ -1,4 +1,5 @@
 import { SubscriptionSource } from '@entities/subscription.entity';
+import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
 import { ManageChannelsGuard } from '@modules/discord/guards/manage-channels.guard';
 import * as Constants from '@modules/subscription/subscription.constants';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
@@ -29,7 +30,10 @@ class SourceDto {
 export class SubscriptionCommands {
   private readonly logger = new Logger(SubscriptionCommands.name);
 
-  constructor(private readonly subscriptionService: SubscriptionService) {}
+  constructor(
+    private readonly subscriptionService: SubscriptionService,
+    protected readonly orm: MikroORM,
+  ) {}
 
   @UseGuards(ManageChannelsGuard)
   @SlashCommand({
@@ -39,6 +43,14 @@ export class SubscriptionCommands {
   async onSubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
     @Options() { source }: SourceDto,
+  ) {
+    return this.handleSubscribe(interaction, source);
+  }
+
+  @CreateRequestContext()
+  private async handleSubscribe(
+    interaction: ChatInputCommandInteraction,
+    source: SubscriptionSource,
   ) {
     try {
       await this.subscriptionService.subscribe(source, interaction.channelId);
@@ -58,7 +70,7 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      else
+      else {
         await interaction.reply({
           content: Constants.REPLIES.subscribeError(
             interaction.channelId,
@@ -66,10 +78,14 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      throw new Error(
-        Constants.ERROR_MESSAGES.subscribeError(interaction.channelId, source),
-        { cause: error },
-      );
+        this.logger.error(
+          Constants.ERROR_MESSAGES.subscribeError(
+            interaction.channelId,
+            source,
+          ),
+          error,
+        );
+      }
     }
   }
 
@@ -81,6 +97,14 @@ export class SubscriptionCommands {
   async onUnsubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
     @Options() { source }: SourceDto,
+  ) {
+    return this.handleUnsubscribe(interaction, source);
+  }
+
+  @CreateRequestContext()
+  private async handleUnsubscribe(
+    interaction: ChatInputCommandInteraction,
+    source: SubscriptionSource,
   ) {
     try {
       await this.subscriptionService.unsubscribe(source, interaction.channelId);
@@ -100,7 +124,7 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      else
+      else {
         await interaction.reply({
           content: Constants.REPLIES.unsubscribeError(
             interaction.channelId,
@@ -108,13 +132,14 @@ export class SubscriptionCommands {
           ),
           ephemeral: true,
         });
-      throw new Error(
-        Constants.ERROR_MESSAGES.unsubscribeError(
-          interaction.channelId,
-          source,
-        ),
-        { cause: error },
-      );
+        this.logger.error(
+          Constants.ERROR_MESSAGES.unsubscribeError(
+            interaction.channelId,
+            source,
+          ),
+          error,
+        );
+      }
     }
   }
 
@@ -125,6 +150,11 @@ export class SubscriptionCommands {
   async onSubscriptions(
     @Context() [interaction]: [ChatInputCommandInteraction],
   ) {
+    return this.handleSubscriptions(interaction);
+  }
+
+  @CreateRequestContext()
+  private async handleSubscriptions(interaction: ChatInputCommandInteraction) {
     try {
       const subscriptions =
         await this.subscriptionService.getChannelSubscriptions(
@@ -151,9 +181,9 @@ export class SubscriptionCommands {
         content: Constants.REPLIES.subscriptionsError(interaction.channelId),
         ephemeral: true,
       });
-      throw new Error(
+      this.logger.error(
         Constants.ERROR_MESSAGES.subscriptionsError(interaction.channelId),
-        { cause: error },
+        error,
       );
     }
   }

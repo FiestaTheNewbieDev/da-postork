@@ -2,6 +2,8 @@ import { Messages } from '@/types';
 import { fmt } from '@utils/logger.utils';
 
 export const MESSAGES = {
+  foundNewArticles: (count: number) =>
+    `Found ${fmt.bold(count)} new article(s)`,
   newArticlesSaved: (count: number) =>
     `Saved ${fmt.bold(count)} new article(s)`,
   noNewArticles: () => 'No new articles to save',
