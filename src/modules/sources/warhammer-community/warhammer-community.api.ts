@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import * as Schemas from '@sources/warhammer-community/warhammer-community.schemas';
 import * as Types from '@sources/warhammer-community/warhammer-community.types';
 import { firstValueFrom } from 'rxjs';
 
@@ -23,10 +24,10 @@ export class WarhammerCommunityApi {
     };
 
     const { data } = await firstValueFrom(
-      this.httpService.post<Types.GetNewsResponse>(`search/news`, _payload),
+      this.httpService.post<unknown>(`search/news`, _payload),
     );
 
-    return data;
+    return Schemas.getNewsResponseSchema.parse(data);
   }
 
   public async search(

@@ -94,8 +94,14 @@ describe(AbstractSourceService.name, () => {
         source,
       );
       expect(queue.addBulk).toHaveBeenCalledWith([
-        { name: '111', data: { channelId: '111', articleIds: [1, 2] } },
-        { name: '222', data: { channelId: '222', articleIds: [1, 2] } },
+        {
+          name: `${source}:111`,
+          data: { channelId: '111', articleIds: [1, 2] },
+        },
+        {
+          name: `${source}:222`,
+          data: { channelId: '222', articleIds: [1, 2] },
+        },
       ]);
     });
 

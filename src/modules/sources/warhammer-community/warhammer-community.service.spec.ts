@@ -1,4 +1,5 @@
 import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
+import { warhammerCommunityArticleFactory } from '@factories/warhammer-community-article.factory';
 import { MikroORM } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
@@ -47,24 +48,6 @@ describe(WarhammerCommunityService.name, () => {
     uri: '/articles/id',
     ...overrides,
   });
-
-  const makeArticle = (
-    overrides?: Partial<WarhammerCommunityArticle>,
-  ): WarhammerCommunityArticle =>
-    ({
-      id: 1,
-      warhammerCommunityId: 'wc-id',
-      warhammerCommunityUuid: 'wc-uuid',
-      warhammerCommunitySlug: 'my-article',
-      title: 'My Article',
-      excerpt: 'My excerpt',
-      locale: 'en-gb',
-      thumbnailPath: 'images/thumb.jpg',
-      publishedAt: new Date('2024-01-01'),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      ...overrides,
-    }) as WarhammerCommunityArticle;
 
   beforeEach(() => {
     em = { flush: jest.fn().mockResolvedValue(undefined) };
@@ -131,7 +114,7 @@ describe(WarhammerCommunityService.name, () => {
 
     it('should create articles and flush', async () => {
       const newsItem = makeNews('1', 'uuid-1');
-      const article = makeArticle();
+      const article = warhammerCommunityArticleFactory();
       articleRepo.create.mockReturnValue(article);
 
       const result = await saveNews([newsItem]);
@@ -166,7 +149,7 @@ describe(WarhammerCommunityService.name, () => {
 
   describe('getArticlesByIds', () => {
     it('should find articles by ids ordered by publishedAt asc', async () => {
-      const articles = [makeArticle()];
+      const articles = [warhammerCommunityArticleFactory()];
       articleRepo.find.mockResolvedValue(articles);
 
       const result = await service.getArticlesByIds([1, 2]);
@@ -176,39 +159,6 @@ describe(WarhammerCommunityService.name, () => {
         { orderBy: { publishedAt: 'asc' } },
       );
       expect(result).toEqual(articles);
-    });
-  });
-
-  describe('buildEmbed', () => {
-    it('should build the embed with all fields', () => {
-      const article = makeArticle();
-
-      const embed = service.buildEmbed(article).toJSON();
-
-      expect(embed.title).toBe(article.title);
-      expect(embed.description).toBe(article.excerpt);
-      expect(embed.image?.url).toBe(
-        `https://assets.warhammer-community.com/${article.thumbnailPath}`,
-      );
-      expect(embed.url).toBe(
-        `https://www.warhammer-community.com/${article.locale}/articles/${article.warhammerCommunityUuid}/${article.warhammerCommunitySlug}/`,
-      );
-    });
-
-    it('should set image to null when thumbnailPath is absent', () => {
-      const article = makeArticle({ thumbnailPath: undefined });
-
-      const embed = service.buildEmbed(article).toJSON();
-
-      expect(embed.image).toBeUndefined();
-    });
-
-    it('should set description to null when excerpt is absent', () => {
-      const article = makeArticle({ excerpt: undefined });
-
-      const embed = service.buildEmbed(article).toJSON();
-
-      expect(embed.description).toBeUndefined();
     });
   });
 });

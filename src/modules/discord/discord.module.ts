@@ -1,10 +1,11 @@
 import { ConfigModule } from '@modules/config/config.module';
 import { ConfigService } from '@modules/config/config.service';
 import { DiscordEventsModule } from '@modules/discord/events/discord-events.module';
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { IntentsBitField } from 'discord.js';
 import { NecordModule } from 'necord';
 
+@Global()
 @Module({
   imports: [
     NecordModule.forRootAsync({
@@ -18,6 +19,7 @@ import { NecordModule } from 'necord';
             IntentsBitField.Flags.Guilds,
             IntentsBitField.Flags.GuildMessages,
             IntentsBitField.Flags.MessageContent,
+            IntentsBitField.Flags.DirectMessages,
           ],
           development:
             configService.get('NODE_ENV') === 'development' && devGuildId

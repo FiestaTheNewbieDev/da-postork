@@ -1,6 +1,5 @@
 import { SubscriptionSource } from '@entities/subscription.entity';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
-import { ManageChannelsGuard } from '@modules/discord/guards/manage-channels.guard';
 import * as Constants from '@modules/subscription/subscription.constants';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import {
@@ -8,7 +7,6 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  UseGuards,
 } from '@nestjs/common';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Context, Options, SlashCommand, StringOption } from 'necord';
@@ -18,7 +16,7 @@ class SourceDto {
     name: 'source',
     description: 'Notification source to subscribe to',
     required: true,
-    choices: Object.values(Constants.SOURCES_MAP).map((s) => ({
+    choices: Object.values(Constants.SOURCE_METADATA).map((s) => ({
       name: s.label,
       value: s.value,
     })),
@@ -35,7 +33,6 @@ export class SubscriptionCommands {
     protected readonly orm: MikroORM,
   ) {}
 
-  @UseGuards(ManageChannelsGuard)
   @SlashCommand({
     name: 'subscribe',
     description: 'Subscribe this channel to a source',
@@ -52,31 +49,33 @@ export class SubscriptionCommands {
     interaction: ChatInputCommandInteraction,
     source: SubscriptionSource,
   ) {
+    await interaction.deferReply({ flags: ['Ephemeral'] });
+    const isDM = !interaction.inGuild();
     try {
       await this.subscriptionService.subscribe(source, interaction.channelId);
-      await interaction.reply({
+      await interaction.editReply({
         content: Constants.REPLIES.subscribeSuccess(
           interaction.channelId,
           source,
+          isDM,
         ),
-        ephemeral: true,
       });
     } catch (error) {
       if (error instanceof ConflictException)
-        await interaction.reply({
+        await interaction.editReply({
           content: Constants.REPLIES.alreadySubscribed(
             interaction.channelId,
             source,
+            isDM,
           ),
-          ephemeral: true,
         });
       else {
-        await interaction.reply({
+        await interaction.editReply({
           content: Constants.REPLIES.subscribeError(
             interaction.channelId,
             source,
+            isDM,
           ),
-          ephemeral: true,
         });
         this.logger.error(
           Constants.ERROR_MESSAGES.subscribeError(
@@ -89,7 +88,6 @@ export class SubscriptionCommands {
     }
   }
 
-  @UseGuards(ManageChannelsGuard)
   @SlashCommand({
     name: 'unsubscribe',
     description: 'Unsubscribe this channel from a source',
@@ -106,31 +104,33 @@ export class SubscriptionCommands {
     interaction: ChatInputCommandInteraction,
     source: SubscriptionSource,
   ) {
+    await interaction.deferReply({ flags: ['Ephemeral'] });
+    const isDM = !interaction.inGuild();
     try {
       await this.subscriptionService.unsubscribe(source, interaction.channelId);
-      await interaction.reply({
+      await interaction.editReply({
         content: Constants.REPLIES.unsubscribeSuccess(
           interaction.channelId,
           source,
+          isDM,
         ),
-        ephemeral: true,
       });
     } catch (error) {
       if (error instanceof NotFoundException)
-        await interaction.reply({
+        await interaction.editReply({
           content: Constants.REPLIES.notSubscribed(
             interaction.channelId,
             source,
+            isDM,
           ),
-          ephemeral: true,
         });
       else {
-        await interaction.reply({
+        await interaction.editReply({
           content: Constants.REPLIES.unsubscribeError(
             interaction.channelId,
             source,
+            isDM,
           ),
-          ephemeral: true,
         });
         this.logger.error(
           Constants.ERROR_MESSAGES.unsubscribeError(
@@ -155,6 +155,8 @@ export class SubscriptionCommands {
 
   @CreateRequestContext()
   private async handleSubscriptions(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply({ flags: ['Ephemeral'] });
+    const isDM = !interaction.inGuild();
     try {
       const subscriptions =
         await this.subscriptionService.getChannelSubscriptions(
@@ -162,24 +164,28 @@ export class SubscriptionCommands {
         );
 
       if (subscriptions.length === 0) {
-        await interaction.reply({
-          content: Constants.REPLIES.noSubscriptions(interaction.channelId),
-          ephemeral: true,
+        await interaction.editReply({
+          content: Constants.REPLIES.noSubscriptions(
+            interaction.channelId,
+            isDM,
+          ),
         });
         return;
       }
 
-      await interaction.reply({
+      await interaction.editReply({
         content: Constants.REPLIES.subscriptions(
           interaction.channelId,
           subscriptions,
+          isDM,
         ),
-        ephemeral: true,
       });
     } catch (error) {
-      await interaction.reply({
-        content: Constants.REPLIES.subscriptionsError(interaction.channelId),
-        ephemeral: true,
+      await interaction.editReply({
+        content: Constants.REPLIES.subscriptionsError(
+          interaction.channelId,
+          isDM,
+        ),
       });
       this.logger.error(
         Constants.ERROR_MESSAGES.subscriptionsError(interaction.channelId),

@@ -8,11 +8,11 @@ import * as CodexYGOConstants from '@sources/codexygo/codexygo.constants';
 import * as WarhammerCommunityConstants from '@sources/warhammer-community/warhammer-community.constants';
 import { fmt as loggerFmt } from '@utils/logger.utils';
 
-export const SOURCES_MAP = {
+export const SOURCE_METADATA = {
   [SubscriptionSource.WarhammerCommunity]: {
     label: WarhammerCommunityConstants.WARHAMMER_COMMUNITY_LABEL,
     description: 'The essential Warhammer news and features site',
-    url: WarhammerCommunityConstants.WARHAMMER_COMMUNITY_WEBSITE_URL,
+    url: WarhammerCommunityConstants.WARHAMMER_COMMUNITY_WEBSITE_BASE_URL,
     value: SubscriptionSource.WarhammerCommunity,
   },
   [SubscriptionSource.CodexYGO]: {
@@ -31,32 +31,76 @@ export const SOURCES_MAP = {
 };
 
 export const REPLIES = {
-  subscribeSuccess: (channelId: string, source: SubscriptionSource) =>
-    `${discordFmt.channel(channelId)} is now subscribed to ${discordFmt.source(source)}.`,
-  subscribeError: (channelId: string, source: SubscriptionSource) =>
-    `An error occurred while subscribing ${discordFmt.channel(channelId)} to ${discordFmt.source(source)}. Please try again later.`,
+  subscribeSuccess: (
+    channelId: string,
+    source: SubscriptionSource,
+    isDM: boolean = false,
+  ) =>
+    isDM
+      ? `You are now subscribed to ${discordFmt.source(source)}.`
+      : `${discordFmt.channel(channelId)} is now subscribed to ${discordFmt.source(source)}.`,
+  subscribeError: (
+    channelId: string,
+    source: SubscriptionSource,
+    isDM: boolean = false,
+  ) =>
+    isDM
+      ? `An error occurred while subscribing to ${discordFmt.source(source)}. Please try again later.`
+      : `An error occurred while subscribing ${discordFmt.channel(channelId)} to ${discordFmt.source(source)}. Please try again later.`,
 
-  unsubscribeSuccess: (channelId: string, source: SubscriptionSource) =>
-    `${discordFmt.channel(channelId)} is now unsubscribed from ${discordFmt.source(source)}.`,
-  unsubscribeError: (channelId: string, source: SubscriptionSource) =>
-    `An error occurred while unsubscribing ${discordFmt.channel(channelId)} from ${discordFmt.source(source)}. Please try again later.`,
+  unsubscribeSuccess: (
+    channelId: string,
+    source: SubscriptionSource,
+    isDM: boolean = false,
+  ) =>
+    isDM
+      ? `You are now unsubscribed from ${discordFmt.source(source)}.`
+      : `${discordFmt.channel(channelId)} is now unsubscribed from ${discordFmt.source(source)}.`,
+  unsubscribeError: (
+    channelId: string,
+    source: SubscriptionSource,
+    isDM: boolean = false,
+  ) =>
+    isDM
+      ? `An error occurred while unsubscribing from ${discordFmt.source(source)}. Please try again later.`
+      : `An error occurred while unsubscribing ${discordFmt.channel(channelId)} from ${discordFmt.source(source)}. Please try again later.`,
 
-  subscriptions: (channelId: string, subscriptions: Subscription[]) =>
-    `${discordFmt.channel(channelId)} is subscribed to the following sources:\n${subscriptions
+  subscriptions: (
+    channelId: string,
+    subscriptions: Subscription[],
+    isDM: boolean = false,
+  ) =>
+    `${isDM ? 'You are subscribed to the following sources' : `${discordFmt.channel(channelId)} is subscribed to the following sources`}:\n${subscriptions
       .map(
         (subscription: Subscription) =>
           `- ${discordFmt.source(subscription.source)}`,
       )
       .join('\n')}`,
-  noSubscriptions: (channelId: string) =>
-    `${discordFmt.channel(channelId)} is not subscribed to any sources.`,
-  subscriptionsError: (channelId: string) =>
-    `An error occurred while fetching subscriptions for ${discordFmt.channel(channelId)}. Please try again later.`,
+  noSubscriptions: (channelId: string, isDM: boolean = false) =>
+    isDM
+      ? 'You are not subscribed to any sources.'
+      : `${discordFmt.channel(channelId)} is not subscribed to any sources.`,
+  subscriptionsError: (channelId: string, isDM: boolean = false) =>
+    isDM
+      ? 'An error occurred while fetching your subscriptions. Please try again later.'
+      : `An error occurred while fetching subscriptions for ${discordFmt.channel(channelId)}. Please try again later.`,
 
-  alreadySubscribed: (channelId: string, source: SubscriptionSource) =>
-    `${discordFmt.channel(channelId)} is already subscribed to ${discordFmt.source(source)}.`,
-  notSubscribed: (channelId: string, source: SubscriptionSource) =>
-    `${discordFmt.channel(channelId)} is not subscribed to ${discordFmt.source(source)}.`,
+  alreadySubscribed: (
+    channelId: string,
+    source: SubscriptionSource,
+    isDM: boolean = false,
+  ) =>
+    isDM
+      ? `You are already subscribed to ${discordFmt.source(source)}.`
+      : `${discordFmt.channel(channelId)} is already subscribed to ${discordFmt.source(source)}.`,
+  notSubscribed: (
+    channelId: string,
+    source: SubscriptionSource,
+    isDM: boolean = false,
+  ) =>
+    isDM
+      ? `You are not subscribed to ${discordFmt.source(source)}.`
+      : `${discordFmt.channel(channelId)} is not subscribed to ${discordFmt.source(source)}.`,
 } as const satisfies Messages;
 
 export const ERROR_MESSAGES = {

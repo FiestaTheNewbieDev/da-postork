@@ -1,15 +1,19 @@
 import * as Entities from '@entities/codexygo';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ConfigService } from '@modules/config/config.service';
-import { DiscordModule } from '@modules/discord/discord.module';
 import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { createSourceConsumer } from '@sources/abstract-source.consumer';
 import { CodexYGOApi } from '@sources/codexygo/codexygo.api';
 import * as Constants from '@sources/codexygo/codexygo.constants';
-import { CodexYGOConsumer } from '@sources/codexygo/codexygo.consumer';
 import { CodexYGOService } from '@sources/codexygo/codexygo.service';
+
+const CodexYGOConsumer = createSourceConsumer<Entities.CodexYGOArticle>(
+  Constants.CODEXYGO_QUEUE,
+  CodexYGOService,
+);
 
 @Module({
   imports: [
@@ -25,7 +29,6 @@ import { CodexYGOService } from '@sources/codexygo/codexygo.service';
         timeout: 5000,
       }),
     }),
-    DiscordModule,
     MikroOrmModule.forFeature(Object.values(Entities)),
     BullModule.registerQueue({
       name: Constants.CODEXYGO_QUEUE,

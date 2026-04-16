@@ -1,14 +1,38 @@
+import { EVENTS } from '@constants/events';
 import { AbstractArticle } from '@entities/abstract-article.entity';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
 import * as DiscordConstants from '@modules/discord/discord.constants';
-import { WorkerHost } from '@nestjs/bullmq';
-import { Logger, OnModuleInit } from '@nestjs/common';
+import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { Logger, OnModuleInit, Type } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AbstractSourceService } from '@sources/abstract-source.service';
 import * as Constants from '@sources/sources.constants';
 import * as Types from '@sources/sources.types';
 import { Job } from 'bullmq';
-import { Client, GuildChannel, Message } from 'discord.js';
+import { Client, GuildChannel } from 'discord.js';
+
+export function createSourceConsumer<TArticle extends AbstractArticle>(
+  queueName: string,
+  serviceType: Type<AbstractSourceService<TArticle>>,
+  concurrency = 4,
+): Type<AbstractSourceConsumer<TArticle>> {
+  @Processor(queueName, { concurrency })
+  class SourceConsumer extends AbstractSourceConsumer<TArticle> {
+    constructor(
+      orm: MikroORM,
+      client: Client,
+      service: AbstractSourceService<TArticle>,
+    ) {
+      super(orm, client, service);
+    }
+  }
+  Reflect.defineMetadata(
+    'design:paramtypes',
+    [MikroORM, Client, serviceType],
+    SourceConsumer,
+  );
+  return SourceConsumer;
+}
 
 export abstract class AbstractSourceConsumer<TArticle extends AbstractArticle>
   extends WorkerHost
@@ -28,7 +52,7 @@ export abstract class AbstractSourceConsumer<TArticle extends AbstractArticle>
     void this.worker.pause();
   }
 
-  @OnEvent('bot.ready')
+  @OnEvent(EVENTS.discordClientReady)
   onBotReady() {
     this.worker.resume();
   }
@@ -39,7 +63,9 @@ export abstract class AbstractSourceConsumer<TArticle extends AbstractArticle>
 
     this.logger.log(Constants.MESSAGES.processJob(channelId, articleIds));
 
-    const channel = this.client.channels.cache.get(channelId) ?? null;
+    const channel =
+      this.client.channels.cache.get(channelId) ??
+      (await this.client.channels.fetch(channelId).catch(() => null));
     if (!channel)
       throw new Error(Constants.ERROR_MESSAGES.channelNotFound(channelId));
     if (!channel.isSendable())
@@ -60,22 +86,21 @@ export abstract class AbstractSourceConsumer<TArticle extends AbstractArticle>
 
     for (const article of articles) {
       try {
-        await channel
-          .send({ embeds: [this.sourceService.buildEmbed(article)] })
-          .then((message: Message) => {
-            if (
-              channel instanceof GuildChannel &&
-              !channel
-                .permissionsFor(this.client.user!)
-                ?.has(DiscordConstants.ADD_REACTIONS)
-            )
-              return;
-            void Promise.all([
-              message.react('👍'),
-              message.react('😐'),
-              message.react('👎'),
-            ]);
-          });
+        const message = await channel.send({
+          embeds: [this.sourceService.buildEmbed(article)],
+        });
+
+        if (
+          channel instanceof GuildChannel &&
+          !channel
+            .permissionsFor(this.client.user!)
+            ?.has(DiscordConstants.ADD_REACTIONS)
+        )
+          return;
+
+        void Promise.all(
+          this.sourceService.getReactions().map((r) => message.react(r)),
+        );
       } catch (error) {
         throw new Error(
           Constants.ERROR_MESSAGES.sendMessageFailed(channelId, article.id),

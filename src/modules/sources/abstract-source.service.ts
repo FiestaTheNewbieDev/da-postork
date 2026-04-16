@@ -7,7 +7,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import * as Constants from '@sources/sources.constants';
 import * as Types from '@sources/sources.types';
 import { Queue } from 'bullmq';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, GuildEmoji } from 'discord.js';
 
 export abstract class AbstractSourceService<
   TArticle extends AbstractArticle,
@@ -26,7 +26,7 @@ export abstract class AbstractSourceService<
     void this.handleCron();
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR, { timeZone: 'UTC' })
   @CreateRequestContext()
   protected async handleCron() {
     try {
@@ -49,8 +49,9 @@ export abstract class AbstractSourceService<
       );
       const articleIds = articles.map((a) => a.id as number);
 
+      const source = this.getSubscriptionSource();
       const jobs = channelIds.map((channelId) => ({
-        name: channelId,
+        name: `${source}:${channelId}`,
         data: { channelId, articleIds } as Types.SourceJobData,
       }));
 
@@ -61,6 +62,10 @@ export abstract class AbstractSourceService<
     } catch (error) {
       this.logger.error(error);
     }
+  }
+
+  public getReactions(): (string | GuildEmoji)[] {
+    return ['👍', '😐', '👎'];
   }
 
   protected abstract getUnsavedNews(): Promise<TNews[]>;

@@ -1,15 +1,20 @@
 import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ConfigService } from '@modules/config/config.service';
-import { DiscordModule } from '@modules/discord/discord.module';
 import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { createSourceConsumer } from '@sources/abstract-source.consumer';
 import { WarhammerCommunityApi } from '@sources/warhammer-community/warhammer-community.api';
 import * as Constants from '@sources/warhammer-community/warhammer-community.constants';
-import { WarhammerCommunityConsumer } from '@sources/warhammer-community/warhammer-community.consumer';
 import { WarhammerCommunityService } from '@sources/warhammer-community/warhammer-community.service';
+
+const WarhammerCommunityConsumer =
+  createSourceConsumer<WarhammerCommunityArticle>(
+    Constants.WARHAMMER_COMMUNITY_QUEUE,
+    WarhammerCommunityService,
+  );
 
 @Module({
   imports: [
@@ -25,7 +30,6 @@ import { WarhammerCommunityService } from '@sources/warhammer-community/warhamme
         timeout: 5000,
       }),
     }),
-    DiscordModule,
     MikroOrmModule.forFeature([WarhammerCommunityArticle]),
     BullModule.registerQueue({
       name: Constants.WARHAMMER_COMMUNITY_QUEUE,

@@ -13,12 +13,16 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
+    "strict": true,
     "paths": {
+      "@constants/*": ["./src/constants/*"],
       "@entities/*": ["./src/entities/*"],
       "@sources/*": ["./src/modules/sources/*"],
       "@modules/*": ["./src/modules/*"],
       "@utils/*": ["./src/utils/*"],
       "@/*": ["./src/*"],
+      "@factories/*": ["./test/factories/*"],
+      "@test/*": ["./test/*"],
       "package.json": ["./package.json"]
     },
     "incremental": true,
