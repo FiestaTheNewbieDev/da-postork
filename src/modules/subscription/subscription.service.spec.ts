@@ -2,33 +2,42 @@ import {
   Subscription,
   SubscriptionSource,
 } from '@entities/subscription.entity';
-import { EntityManager } from '@mikro-orm/postgresql';
+import { EntityRepository } from '@mikro-orm/postgresql';
+import { RedisService } from '@modules/redis/redis.service';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe(SubscriptionService.name, () => {
   let service: SubscriptionService;
-  let fork: {
-    find: jest.Mock;
-    findOne: jest.Mock;
-    create: jest.Mock;
-    persist: jest.Mock;
-    remove: jest.Mock;
-  };
+  let subscriptionRepo: jest.Mocked<EntityRepository<Subscription>>;
+  let redisService: jest.Mocked<Pick<RedisService, 'client'>>;
+  let em: { persist: jest.Mock; remove: jest.Mock; flush: jest.Mock };
 
   beforeEach(() => {
-    fork = {
+    em = {
+      persist: jest.fn().mockReturnThis(),
+      remove: jest.fn().mockReturnThis(),
+      flush: jest.fn().mockResolvedValue(undefined),
+    };
+
+    subscriptionRepo = {
       find: jest.fn(),
       findOne: jest.fn(),
       create: jest.fn(),
-      persist: jest.fn().mockReturnValue({ flush: jest.fn() }),
-      remove: jest.fn().mockReturnValue({ flush: jest.fn() }),
+      getEntityManager: jest.fn().mockReturnValue(em),
+    } as unknown as jest.Mocked<EntityRepository<Subscription>>;
+
+    redisService = {
+      client: {
+        get: jest.fn().mockResolvedValue(null),
+        setEx: jest.fn().mockResolvedValue('OK'),
+      } as unknown as jest.Mocked<RedisService['client']>,
     };
 
-    const em = {
-      fork: jest.fn().mockReturnValue(fork),
-    } as unknown as EntityManager;
-    service = new SubscriptionService(em);
+    service = new SubscriptionService(
+      subscriptionRepo,
+      redisService as unknown as RedisService,
+    );
   });
 
   afterEach(() => {
@@ -38,16 +47,19 @@ describe(SubscriptionService.name, () => {
   describe('getSubscribedChannels', () => {
     it('should return the channel ids for the given source', async () => {
       const source = SubscriptionSource.WarhammerCommunity;
-      fork.find.mockResolvedValue([{ channelId: '111' }, { channelId: '222' }]);
+      subscriptionRepo.find.mockResolvedValue([
+        { channelId: '111' } as Subscription,
+        { channelId: '222' } as Subscription,
+      ]);
 
       const result = await service.getSubscribedChannels(source);
 
-      expect(fork.find).toHaveBeenCalledWith(Subscription, { source });
+      expect(subscriptionRepo.find).toHaveBeenCalledWith({ source });
       expect(result).toEqual(['111', '222']);
     });
 
     it('should return an empty array when there are no subscriptions', async () => {
-      fork.find.mockResolvedValue([]);
+      subscriptionRepo.find.mockResolvedValue([]);
 
       const result = await service.getSubscribedChannels(
         SubscriptionSource.CodexYGO,
@@ -63,16 +75,16 @@ describe(SubscriptionService.name, () => {
       const subscriptions = [
         { source: SubscriptionSource.WarhammerCommunity, channelId },
       ] as Subscription[];
-      fork.find.mockResolvedValue(subscriptions);
+      subscriptionRepo.find.mockResolvedValue(subscriptions);
 
       const result = await service.getChannelSubscriptions(channelId);
 
-      expect(fork.find).toHaveBeenCalledWith(Subscription, { channelId });
+      expect(subscriptionRepo.find).toHaveBeenCalledWith({ channelId });
       expect(result).toBe(subscriptions);
     });
 
     it('should return an empty array when there are no subscriptions', async () => {
-      fork.find.mockResolvedValue([]);
+      subscriptionRepo.find.mockResolvedValue([]);
 
       const result = await service.getChannelSubscriptions('unknown');
 
@@ -86,25 +98,29 @@ describe(SubscriptionService.name, () => {
 
     it('should create and return a new subscription', async () => {
       const subscription = { source, channelId } as Subscription;
-      fork.findOne.mockResolvedValue(null);
-      fork.create.mockReturnValue(subscription);
+      subscriptionRepo.findOne.mockResolvedValue(null);
+      subscriptionRepo.create.mockReturnValue(subscription);
 
       const result = await service.subscribe(source, channelId);
 
-      expect(fork.findOne).toHaveBeenCalledWith(Subscription, {
+      expect(subscriptionRepo.findOne).toHaveBeenCalledWith({
         source,
         channelId,
       });
-      expect(fork.create).toHaveBeenCalledWith(Subscription, {
+      expect(subscriptionRepo.create).toHaveBeenCalledWith({
         source,
         channelId,
       });
-      expect(fork.persist).toHaveBeenCalledWith(subscription);
+      expect(em.persist).toHaveBeenCalledWith(subscription);
+      expect(em.flush).toHaveBeenCalled();
       expect(result).toBe(subscription);
     });
 
     it('should throw ConflictException when already subscribed', async () => {
-      fork.findOne.mockResolvedValue({ source, channelId });
+      subscriptionRepo.findOne.mockResolvedValue({
+        source,
+        channelId,
+      } as Subscription);
 
       await expect(service.subscribe(source, channelId)).rejects.toThrow(
         ConflictException,
@@ -118,19 +134,20 @@ describe(SubscriptionService.name, () => {
 
     it('should remove the subscription', async () => {
       const subscription = { source, channelId } as Subscription;
-      fork.findOne.mockResolvedValue(subscription);
+      subscriptionRepo.findOne.mockResolvedValue(subscription);
 
       await service.unsubscribe(source, channelId);
 
-      expect(fork.findOne).toHaveBeenCalledWith(Subscription, {
+      expect(subscriptionRepo.findOne).toHaveBeenCalledWith({
         source,
         channelId,
       });
-      expect(fork.remove).toHaveBeenCalledWith(subscription);
+      expect(em.remove).toHaveBeenCalledWith(subscription);
+      expect(em.flush).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when not subscribed', async () => {
-      fork.findOne.mockResolvedValue(null);
+      subscriptionRepo.findOne.mockResolvedValue(null);
 
       await expect(service.unsubscribe(source, channelId)).rejects.toThrow(
         NotFoundException,

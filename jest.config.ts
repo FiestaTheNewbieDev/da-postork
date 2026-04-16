@@ -22,11 +22,14 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   testEnvironment: 'node',
   moduleNameMapper: {
+    '^@constants/(.*)$': '<rootDir>/src/constants/$1',
     '^@entities/(.*)$': '<rootDir>/src/entities/$1',
     '^@sources/(.*)$': '<rootDir>/src/modules/sources/$1',
     '^@modules/(.*)$': '<rootDir>/src/modules/$1',
     '^@utils/(.*)$': '<rootDir>/src/utils/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@factories/(.*)$': '<rootDir>/test/factories/$1',
+    '^@test/(.*)$': '<rootDir>/test/$1',
     'package.json': '<rootDir>/package.json',
   },
 };

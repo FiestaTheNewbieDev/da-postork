@@ -42,7 +42,34 @@ describe(WarhammerCommunityApi.name, () => {
     });
 
     it('should return the response data', async () => {
-      const news = [{ id: '1', title: 'Article' }];
+      const newsItem = {
+        id: '1',
+        uuid: 'abc-123',
+        title: 'Article',
+        site: 'en-gb',
+        slug: 'article-slug',
+        excerpt: 'An excerpt',
+        image: {
+          path: '/img.jpg',
+          alt: 'img',
+          width: 800,
+          height: 600,
+          focus: 'center',
+        },
+        collection: 'articles',
+        game_system: {
+          title: 'Warhammer 40,000',
+          light: { path: null, alt: null, width: 0, height: 0, focus: '' },
+          dark: { path: null, alt: null, width: 0, height: 0, focus: '' },
+        },
+        topics: [],
+        date: '2024-01-01',
+        hide_date: false,
+        hide_read_time: false,
+        interaction_time: '5 min',
+        uri: '/en-gb/articles/abc-123/article-slug/',
+      };
+      const news = [newsItem];
       httpService.post.mockReturnValue(of({ data: { news } }));
 
       const result = await api.getNews();

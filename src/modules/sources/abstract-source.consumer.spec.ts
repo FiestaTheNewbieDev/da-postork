@@ -49,10 +49,14 @@ class TestConsumer extends AbstractSourceConsumer<TestArticle> {}
 describe(AbstractSourceConsumer.name, () => {
   let consumer: TestConsumer;
   let discordClient: {
-    channels: { cache: { get: jest.Mock } };
+    channels: { cache: { get: jest.Mock }; fetch: jest.Mock };
     user: object;
   };
-  let sourceService: { getArticlesByIds: jest.Mock; buildEmbed: jest.Mock };
+  let sourceService: {
+    getArticlesByIds: jest.Mock;
+    buildEmbed: jest.Mock;
+    getReactions: jest.Mock;
+  };
   let worker: { pause: jest.Mock; resume: jest.Mock };
 
   const makeJob = (channelId: string, articleIds: number[]) =>
@@ -60,12 +64,16 @@ describe(AbstractSourceConsumer.name, () => {
 
   beforeEach(() => {
     discordClient = {
-      channels: { cache: { get: jest.fn() } },
+      channels: {
+        cache: { get: jest.fn() },
+        fetch: jest.fn().mockResolvedValue(null),
+      },
       user: {},
     };
     sourceService = {
       getArticlesByIds: jest.fn(),
       buildEmbed: jest.fn().mockReturnValue({}),
+      getReactions: jest.fn().mockReturnValue(['👍', '😐', '👎']),
     };
 
     consumer = new TestConsumer(

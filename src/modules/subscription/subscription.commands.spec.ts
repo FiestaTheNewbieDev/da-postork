@@ -1,12 +1,25 @@
-import {
-  Subscription,
-  SubscriptionSource,
-} from '@entities/subscription.entity';
+import { SubscriptionSource } from '@entities/subscription.entity';
+import { subscriptionFactory } from '@factories/subscription.factory';
 import { SubscriptionCommands } from '@modules/subscription/subscription.commands';
 import * as Constants from '@modules/subscription/subscription.constants';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ChatInputCommandInteraction } from 'discord.js';
+
+jest.mock(
+  '@mikro-orm/core',
+  (): Record<string, unknown> => ({
+    ...jest.requireActual('@mikro-orm/core'),
+    CreateRequestContext:
+      () =>
+      (
+        _target: object,
+        _key: string,
+        descriptor: PropertyDescriptor,
+      ): PropertyDescriptor =>
+        descriptor,
+  }),
+);
 
 describe(SubscriptionCommands.name, () => {
   const source = SubscriptionSource.WarhammerCommunity;
@@ -14,7 +27,12 @@ describe(SubscriptionCommands.name, () => {
 
   let commands: SubscriptionCommands;
   let subscriptionService: jest.Mocked<SubscriptionService>;
-  let interaction: { channelId: string; reply: jest.Mock };
+  let interaction: {
+    channelId: string;
+    inGuild: jest.Mock;
+    deferReply: jest.Mock;
+    editReply: jest.Mock;
+  };
 
   beforeEach(() => {
     subscriptionService = {
@@ -26,10 +44,12 @@ describe(SubscriptionCommands.name, () => {
 
     interaction = {
       channelId,
-      reply: jest.fn().mockResolvedValue(undefined),
+      inGuild: jest.fn().mockReturnValue(true),
+      deferReply: jest.fn().mockResolvedValue(undefined),
+      editReply: jest.fn().mockResolvedValue(undefined),
     };
 
-    commands = new SubscriptionCommands(subscriptionService);
+    commands = new SubscriptionCommands(subscriptionService, {} as never);
   });
 
   afterEach(() => {
@@ -38,7 +58,7 @@ describe(SubscriptionCommands.name, () => {
 
   describe('onSubscribe', () => {
     it('should subscribe and reply with success', async () => {
-      subscriptionService.subscribe.mockResolvedValue({} as Subscription);
+      subscriptionService.subscribe.mockResolvedValue(subscriptionFactory());
 
       await commands.onSubscribe(
         [interaction as unknown as ChatInputCommandInteraction],
@@ -51,45 +71,41 @@ describe(SubscriptionCommands.name, () => {
         source,
         channelId,
       );
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.deferReply).toHaveBeenCalledWith({
+        flags: ['Ephemeral'],
+      });
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.subscribeSuccess(channelId, source),
-        ephemeral: true,
       });
     });
 
-    it('should reply with alreadySubscribed and re-throw on ConflictException', async () => {
+    it('should reply with alreadySubscribed on ConflictException', async () => {
       subscriptionService.subscribe.mockRejectedValue(new ConflictException());
 
-      await expect(
-        commands.onSubscribe(
-          [interaction as unknown as ChatInputCommandInteraction],
-          {
-            source,
-          },
-        ),
-      ).rejects.toThrow(Error);
+      await commands.onSubscribe(
+        [interaction as unknown as ChatInputCommandInteraction],
+        {
+          source,
+        },
+      );
 
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.alreadySubscribed(channelId, source),
-        ephemeral: true,
       });
     });
 
-    it('should reply with subscribeError and re-throw on unknown error', async () => {
+    it('should reply with subscribeError on unknown error', async () => {
       subscriptionService.subscribe.mockRejectedValue(new Error('unknown'));
 
-      await expect(
-        commands.onSubscribe(
-          [interaction as unknown as ChatInputCommandInteraction],
-          {
-            source,
-          },
-        ),
-      ).rejects.toThrow(Error);
+      await commands.onSubscribe(
+        [interaction as unknown as ChatInputCommandInteraction],
+        {
+          source,
+        },
+      );
 
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.subscribeError(channelId, source),
-        ephemeral: true,
       });
     });
   });
@@ -107,47 +123,43 @@ describe(SubscriptionCommands.name, () => {
         source,
         channelId,
       );
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.deferReply).toHaveBeenCalledWith({
+        flags: ['Ephemeral'],
+      });
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.unsubscribeSuccess(channelId, source),
-        ephemeral: true,
       });
     });
 
-    it('should reply with notSubscribed and re-throw on NotFoundException', async () => {
+    it('should reply with notSubscribed on NotFoundException', async () => {
       subscriptionService.unsubscribe.mockRejectedValue(
         new NotFoundException(),
       );
 
-      await expect(
-        commands.onUnsubscribe(
-          [interaction as unknown as ChatInputCommandInteraction],
-          {
-            source,
-          },
-        ),
-      ).rejects.toThrow(Error);
+      await commands.onUnsubscribe(
+        [interaction as unknown as ChatInputCommandInteraction],
+        {
+          source,
+        },
+      );
 
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.notSubscribed(channelId, source),
-        ephemeral: true,
       });
     });
 
-    it('should reply with unsubscribeError and re-throw on unknown error', async () => {
+    it('should reply with unsubscribeError on unknown error', async () => {
       subscriptionService.unsubscribe.mockRejectedValue(new Error('unknown'));
 
-      await expect(
-        commands.onUnsubscribe(
-          [interaction as unknown as ChatInputCommandInteraction],
-          {
-            source,
-          },
-        ),
-      ).rejects.toThrow(Error);
+      await commands.onUnsubscribe(
+        [interaction as unknown as ChatInputCommandInteraction],
+        {
+          source,
+        },
+      );
 
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.unsubscribeError(channelId, source),
-        ephemeral: true,
       });
     });
   });
@@ -155,9 +167,12 @@ describe(SubscriptionCommands.name, () => {
   describe('onSubscriptions', () => {
     it('should reply with the subscriptions list', async () => {
       const subscriptions = [
-        { source: SubscriptionSource.WarhammerCommunity, channelId },
-        { source: SubscriptionSource.CodexYGO, channelId },
-      ] as Subscription[];
+        subscriptionFactory({
+          source: SubscriptionSource.WarhammerCommunity,
+          channelId,
+        }),
+        subscriptionFactory({ source: SubscriptionSource.CodexYGO, channelId }),
+      ];
       subscriptionService.getChannelSubscriptions.mockResolvedValue(
         subscriptions,
       );
@@ -169,9 +184,11 @@ describe(SubscriptionCommands.name, () => {
       expect(subscriptionService.getChannelSubscriptions).toHaveBeenCalledWith(
         channelId,
       );
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.deferReply).toHaveBeenCalledWith({
+        flags: ['Ephemeral'],
+      });
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.subscriptions(channelId, subscriptions),
-        ephemeral: true,
       });
     });
 
@@ -182,26 +199,22 @@ describe(SubscriptionCommands.name, () => {
         interaction as unknown as ChatInputCommandInteraction,
       ]);
 
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.noSubscriptions(channelId),
-        ephemeral: true,
       });
     });
 
-    it('should reply with subscriptionsError and re-throw on error', async () => {
+    it('should reply with subscriptionsError on error', async () => {
       subscriptionService.getChannelSubscriptions.mockRejectedValue(
         new Error('unknown'),
       );
 
-      await expect(
-        commands.onSubscriptions([
-          interaction as unknown as ChatInputCommandInteraction,
-        ]),
-      ).rejects.toThrow(Error);
+      await commands.onSubscriptions([
+        interaction as unknown as ChatInputCommandInteraction,
+      ]);
 
-      expect(interaction.reply).toHaveBeenCalledWith({
+      expect(interaction.editReply).toHaveBeenCalledWith({
         content: Constants.REPLIES.subscriptionsError(channelId),
-        ephemeral: true,
       });
     });
   });

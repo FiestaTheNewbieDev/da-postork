@@ -1,3 +1,4 @@
+import { EVENTS } from '@constants/events';
 import { ConfigService } from '@modules/config/config.service';
 import { ReadyEvent } from '@modules/discord/events/ready.event';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -25,10 +26,10 @@ describe(ReadyEvent.name, () => {
   });
 
   describe(ReadyEvent.prototype.handle.name, () => {
-    it('should emit bot.ready', () => {
+    it(`should emit ${EVENTS.discordClientReady}`, () => {
       readyEvent.handle([client as unknown as Client<true>]);
 
-      expect(eventEmitter.emit).toHaveBeenCalledWith('bot.ready');
+      expect(eventEmitter.emit).toHaveBeenCalledWith(EVENTS.discordClientReady);
     });
 
     it('should set presence to idle in development', () => {
