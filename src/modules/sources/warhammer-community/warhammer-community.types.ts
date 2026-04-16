@@ -1,50 +1,16 @@
-export type Collection = 'articles';
+import { z } from 'zod';
+import * as Schemas from './warhammer-community.schemas';
 
-export type Locale = 'en-gb' | 'de-de';
-
-export type Image = {
-  path: string;
-  alt: Nullable<string>;
-  width: number;
-  height: number;
-  focus: string;
-};
-
-export type GameSystem = {
-  title?:
-    | 'Warhammer 40,000'
-    | 'Warhammer: The Horus Heresy'
-    | 'Warhammer Plus'
-    | 'Warhammer Age of Sigmar'
-    | 'Black Library'
-    | 'White Dwarf'
-    | (string & {});
-  light: Image;
-  dark: Image;
-};
-
-export type Topic = {
-  title: string;
-  slug: string;
-};
-
-export type News = {
-  title: string;
-  site: Locale | (string & {});
-  slug: string;
-  excerpt: string;
-  image: Image;
-  collection: Collection | (string & {});
-  game_system: GameSystem;
-  topics: Topic[];
-  date: string;
-  hide_date: boolean;
-  hide_read_time: boolean;
-  interaction_time: string;
-  uri: string;
-  id: string;
-  uuid: string;
-};
+export type Locale = z.infer<typeof Schemas.localeSchema>;
+export type Collection = z.infer<typeof Schemas.collectionSchema>;
+export type Image = z.infer<typeof Schemas.imageSchema>;
+export type GameSystemTitle = z.infer<typeof Schemas.gameSystemTitleSchema>;
+export type GameSystem = z.infer<typeof Schemas.gameSystemSchema>;
+export type Topic = z.infer<typeof Schemas.topicSchema>;
+export type News = z.infer<
+  typeof Schemas.getNewsResponseSchema
+>['news'][number];
+export type GetNewsResponse = z.infer<typeof Schemas.getNewsResponseSchema>;
 
 export type SearchPayload = {
   locale: Locale | (string & {});
@@ -81,9 +47,9 @@ export type SearchPayload = {
 export type SearchResponse = {
   hits: {
     title: string;
-    game_systems: NonNullable<GameSystem['title']>[];
+    game_systems: string[];
     excerpt: string;
-    topics: Topic['title'][];
+    topics: string[];
     locale: Locale | (string & {});
     date: number;
     id: News;
@@ -107,8 +73,4 @@ export type GetNewsPayload = {
   perPage: number;
   sortBy: 'date_desc' | 'date_asc' | 'title_asc' | 'title_desc';
   topics: string[];
-};
-
-export type GetNewsResponse = {
-  news: News[];
 };

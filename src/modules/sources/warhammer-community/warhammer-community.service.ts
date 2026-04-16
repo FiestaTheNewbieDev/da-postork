@@ -85,7 +85,7 @@ export class WarhammerCommunityService extends AbstractSourceService<
   }
 
   public static buildArticleUrl(article: WarhammerCommunityArticle): string {
-    const url = new URL(Constants.WARHAMMER_COMMUNITY_WEBSITE_URL);
+    const url = new URL(Constants.WARHAMMER_COMMUNITY_WEBSITE_BASE_URL);
     url.pathname = `/${article.locale}/articles/${article.warhammerCommunityUuid}/${article.warhammerCommunitySlug}/`;
     return url.toString();
   }

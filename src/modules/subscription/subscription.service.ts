@@ -4,6 +4,8 @@ import {
 } from '@entities/subscription.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
+import { CACHE_KEYS, CACHE_TTL } from '@modules/redis/redis.constants';
+import { RedisService } from '@modules/redis/redis.service';
 import * as Constants from '@modules/subscription/subscription.constants';
 import {
   ConflictException,
@@ -19,13 +21,27 @@ export class SubscriptionService {
   constructor(
     @InjectRepository(Subscription)
     private readonly subscriptionRepo: EntityRepository<Subscription>,
+    private readonly redisService: RedisService,
   ) {}
 
   public async getSubscribedChannels(
     source: SubscriptionSource,
   ): Promise<string[]> {
+    const cacheKey = CACHE_KEYS.subscribedChannels(source);
+    const cached = await this.redisService.client.get(cacheKey);
+
+    if (cached) return JSON.parse(cached) as string[];
+
     const subscriptions = await this.subscriptionRepo.find({ source });
-    return subscriptions.map((s) => s.channelId);
+    const channelIds = subscriptions.map((s) => s.channelId);
+
+    void this.redisService.client.setEx(
+      cacheKey,
+      CACHE_TTL.subscribedChannels,
+      JSON.stringify(channelIds),
+    );
+
+    return channelIds;
   }
 
   public async getChannelSubscriptions(
@@ -50,6 +66,8 @@ export class SubscriptionService {
     em.persist(subscription);
     await em.flush();
 
+    await this.addToSubscribedChannelsCache(source, channelId);
+
     return subscription;
   }
 
@@ -70,5 +88,43 @@ export class SubscriptionService {
     const em = this.subscriptionRepo.getEntityManager();
     em.remove(subscription);
     await em.flush();
+
+    await this.removeFromSubscribedChannelsCache(source, channelId);
+  }
+
+  private async addToSubscribedChannelsCache(
+    source: SubscriptionSource,
+    channelId: string,
+  ): Promise<void> {
+    const cacheKey = CACHE_KEYS.subscribedChannels(source);
+    const cached = await this.redisService.client.get(cacheKey);
+
+    if (!cached) return;
+
+    const channelIds = JSON.parse(cached) as string[];
+    void this.redisService.client.setEx(
+      cacheKey,
+      CACHE_TTL.subscribedChannels,
+      JSON.stringify([...channelIds, channelId]),
+    );
+  }
+
+  private async removeFromSubscribedChannelsCache(
+    source: SubscriptionSource,
+    channelId: string,
+  ): Promise<void> {
+    const cacheKey = CACHE_KEYS.subscribedChannels(source);
+    const cached = await this.redisService.client.get(cacheKey);
+
+    if (!cached) return;
+
+    const channelIds = (JSON.parse(cached) as string[]).filter(
+      (id) => id !== channelId,
+    );
+    void this.redisService.client.setEx(
+      cacheKey,
+      CACHE_TTL.subscribedChannels,
+      JSON.stringify(channelIds),
+    );
   }
 }

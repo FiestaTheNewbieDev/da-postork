@@ -1,3 +1,4 @@
+import { EVENTS } from '@constants/events';
 import { ConfigService } from '@modules/config/config.service';
 import { MESSAGES } from '@modules/discord/discord.constants';
 import { Injectable, Logger } from '@nestjs/common';
@@ -22,6 +23,6 @@ export class ReadyEvent {
       client.user.setPresence({ status: 'idle' });
     }
 
-    this.eventEmitter.emit('bot.ready');
+    this.eventEmitter.emit(EVENTS.discordClientReady);
   }
 }
