@@ -1,13 +1,30 @@
 services:
-  app:
+  migrator:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile.migrator
+      target: migrator
     environment:
       - NODE_ENV=production
     env_file:
       - .env.production
     depends_on:
+      postgres:
+        condition: service_healthy
+    restart: no
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+      target: runner
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env.production
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
