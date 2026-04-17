@@ -1,0 +1,29 @@
+FROM node:24-alpine AS deps
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+
+FROM node:24-alpine AS migrator
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package*.json ./
+COPY tsconfig*.json ./
+COPY mikro-orm.config.ts ./
+COPY src/entities ./src/entities
+COPY migrations ./migrations
+
+RUN addgroup -S da-postork && adduser -S da-postork -G da-postork
+USER da-postork
+
+CMD ["npm", "run", "migrate"]
+
+
+
+
+
