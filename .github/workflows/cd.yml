@@ -17,38 +17,20 @@ jobs:
         working-directory: ${{ vars.WORKDIR }}
         run: git pull origin main
 
-  install:
-    name: Install dependencies
-    needs: pull
-    runs-on: [self-hosted, production]
-    steps:
-      - name: 📦 Install dependencies
-        working-directory: ${{ vars.WORKDIR }}
-        run: npm ci
-
-  migrate:
-    name: Run database migrations
-    needs: install
-    runs-on: [self-hosted, production]
-    steps:
-      - name: 🗄️ Run migrations
-        working-directory: ${{ vars.WORKDIR }}
-        run: npm run migrate
-
   deploy:
     name: Deploy
-    needs: migrate
+    needs: pull
     runs-on: [self-hosted, production]
     steps:
       - name: 🚀 Restart app
         working-directory: ${{ vars.WORKDIR }}
-        run: docker compose up app --build -d
+        run: docker compose up app migrator --build -d
 
       - name: ✅ Verify deployment
         working-directory: ${{ vars.WORKDIR }}
         run: |
           echo "Waiting for bot to be ready..."
-          if ! timeout 60 bash -c 'until docker compose logs app 2>&1 | grep -q "Ready as"; do sleep 2; done'; then
+          if ! timeout 120 bash -c 'until docker compose logs app 2>&1 | grep -q "Ready as"; do sleep 2; done'; then
             echo "Bot failed to connect to Discord!"
             exit 1
           fi
