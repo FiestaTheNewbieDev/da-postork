@@ -1,5 +1,6 @@
-import { SubscriptionSource } from '@entities/subscription.entity';
+import { SourceId } from '@entities/subscription.entity';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
+import { SourceAutocompleteInterceptor } from '@modules/subscription/source-autocomplete.interceptor';
 import * as Constants from '@modules/subscription/subscription.constants';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import {
@@ -7,7 +8,9 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UseInterceptors,
 } from '@nestjs/common';
+import { SourcesService } from '@sources/sources.service';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Context, Options, SlashCommand, StringOption } from 'necord';
 
@@ -16,12 +19,9 @@ class SourceDto {
     name: 'source',
     description: 'Notification source to subscribe to',
     required: true,
-    choices: Object.values(Constants.SOURCE_METADATA).map((s) => ({
-      name: s.label,
-      value: s.value,
-    })),
+    autocomplete: true,
   })
-  source!: SubscriptionSource;
+  sourceId!: SourceId;
 }
 
 @Injectable()
@@ -31,26 +31,29 @@ export class SubscriptionCommands {
   constructor(
     private readonly subscriptionService: SubscriptionService,
     protected readonly orm: MikroORM,
+    private readonly sourcesService: SourcesService,
   ) {}
 
+  @UseInterceptors(SourceAutocompleteInterceptor)
   @SlashCommand({
     name: 'subscribe',
     description: 'Subscribe this channel to a source',
   })
   async onSubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
-    @Options() { source }: SourceDto,
+    @Options() { sourceId }: SourceDto,
   ) {
-    return this.handleSubscribe(interaction, source);
+    return this.handleSubscribe(interaction, sourceId);
   }
 
   @CreateRequestContext()
   private async handleSubscribe(
     interaction: ChatInputCommandInteraction,
-    source: SubscriptionSource,
+    sourceId: SourceId,
   ) {
     await interaction.deferReply({ flags: ['Ephemeral'] });
     const isDM = !interaction.inGuild();
+    const source = this.sourcesService.resolve(sourceId);
     try {
       await this.subscriptionService.subscribe(source, interaction.channelId);
       await interaction.editReply({
@@ -88,24 +91,26 @@ export class SubscriptionCommands {
     }
   }
 
+  @UseInterceptors(SourceAutocompleteInterceptor)
   @SlashCommand({
     name: 'unsubscribe',
     description: 'Unsubscribe this channel from a source',
   })
   async onUnsubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
-    @Options() { source }: SourceDto,
+    @Options() { sourceId }: SourceDto,
   ) {
-    return this.handleUnsubscribe(interaction, source);
+    return this.handleUnsubscribe(interaction, sourceId);
   }
 
   @CreateRequestContext()
   private async handleUnsubscribe(
     interaction: ChatInputCommandInteraction,
-    source: SubscriptionSource,
+    sourceId: SourceId,
   ) {
     await interaction.deferReply({ flags: ['Ephemeral'] });
     const isDM = !interaction.inGuild();
+    const source = this.sourcesService.resolve(sourceId);
     try {
       await this.subscriptionService.unsubscribe(source, interaction.channelId);
       await interaction.editReply({
@@ -173,10 +178,14 @@ export class SubscriptionCommands {
         return;
       }
 
+      const sources = subscriptions.map((s) =>
+        this.sourcesService.resolve(s.source),
+      );
+
       await interaction.editReply({
         content: Constants.REPLIES.subscriptions(
           interaction.channelId,
-          subscriptions,
+          sources,
           isDM,
         ),
       });

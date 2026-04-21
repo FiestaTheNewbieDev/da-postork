@@ -1,24 +1,27 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
 import { GundamOfficialArticle } from '@entities/gundam-official-article.entity';
-import { SubscriptionSource } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { InjectQueue } from '@nestjs/bullmq';
-import { AbstractSourceService } from '@sources/abstract-source.service';
+import { Injectable } from '@nestjs/common';
+import { AbstractSourceService } from '@sources/core/abstract-source-service';
 import { GundamOfficialApi } from '@sources/gundam-official/gundam-official.api';
 import * as Constants from '@sources/gundam-official/gundam-official.constants';
+import { GundamOfficialSource } from '@sources/gundam-official/gundam-official.source';
 import * as Types from '@sources/gundam-official/gundam-official.types';
 import { SourceJobData } from '@sources/sources.types';
 import { Queue } from 'bullmq';
 import { EmbedBuilder } from 'discord.js';
 
+@Injectable()
 export class GundamOfficialService extends AbstractSourceService<
   AbstractArticle,
   unknown
 > {
   constructor(
+    source: GundamOfficialSource,
     private readonly api: GundamOfficialApi,
     @InjectRepository(GundamOfficialArticle)
     private readonly articleRepo: EntityRepository<GundamOfficialArticle>,
@@ -27,7 +30,7 @@ export class GundamOfficialService extends AbstractSourceService<
     @InjectQueue(Constants.GUNDAM_OFFICIAL_QUEUE)
     queue: Queue<SourceJobData>,
   ) {
-    super(orm, subscriptionService, queue);
+    super(source, orm, subscriptionService, queue);
   }
 
   protected async getUnsavedNews(): Promise<Types.News[]> {
@@ -41,6 +44,7 @@ export class GundamOfficialService extends AbstractSourceService<
       (n) => !existing.some((e) => e.gundamOfficialDocumentId === n.documentId),
     );
   }
+
   protected async saveNews(
     news: Types.News[],
   ): Promise<GundamOfficialArticle[]> {
@@ -59,10 +63,6 @@ export class GundamOfficialService extends AbstractSourceService<
     return articles;
   }
 
-  protected getSubscriptionSource(): SubscriptionSource {
-    return SubscriptionSource.GundamOfficial;
-  }
-
   public getArticlesByIds(ids: number[]): Promise<GundamOfficialArticle[]> {
     return this.articleRepo.find(
       { id: { $in: ids } },
@@ -75,7 +75,7 @@ export class GundamOfficialService extends AbstractSourceService<
       .setTitle(article.title)
       .setImage(article.thumbnailUrl)
       .setURL(GundamOfficialService.buildArticleUrl(article))
-      .addFields({ name: '\u200B', value: article.publishedAt.toDateString() });
+      .addFields({ name: '​', value: article.publishedAt.toDateString() });
   }
 
   public static buildArticleUrl(article: GundamOfficialArticle): string {

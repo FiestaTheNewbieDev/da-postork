@@ -1,9 +1,10 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
-import { SubscriptionSource } from '@entities/subscription.entity';
+import { SourceId } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger } from '@nestjs/common';
-import { AbstractSourceService } from '@sources/abstract-source.service';
+import { Source } from '@sources/core/abstract-source';
+import { AbstractSourceService } from '@sources/core/abstract-source-service';
 import * as Constants from '@sources/sources.constants';
 import { SourceJobData } from '@sources/sources.types';
 import { Queue } from 'bullmq';
@@ -22,21 +23,28 @@ class TestArticle extends AbstractArticle {}
 class TestSourceService extends AbstractSourceService<TestArticle> {
   getUnsavedNews = jest.fn<Promise<unknown[]>, []>();
   saveNews = jest.fn<Promise<TestArticle[]>, [unknown[]]>();
-  getSubscriptionSource = jest.fn<SubscriptionSource, []>();
   getArticlesByIds = jest.fn<Promise<TestArticle[]>, [number[]]>();
   buildEmbed = jest.fn<EmbedBuilder, [TestArticle]>();
 }
 
 describe(AbstractSourceService.name, () => {
   let service: TestSourceService;
+  let mockSource: Source;
   let subscriptionService: { getSubscribedChannels: jest.Mock };
   let queue: { addBulk: jest.Mock };
 
   beforeEach(() => {
+    mockSource = {
+      id: 'TEST' as SourceId,
+      label: 'Test',
+      description: null,
+      url: null,
+    } as Source;
     subscriptionService = { getSubscribedChannels: jest.fn() };
     queue = { addBulk: jest.fn().mockResolvedValue(undefined) };
 
     service = new TestSourceService(
+      mockSource,
       {} as MikroORM,
       subscriptionService as unknown as SubscriptionService,
       queue as unknown as Queue<SourceJobData>,
@@ -77,11 +85,9 @@ describe(AbstractSourceService.name, () => {
     it('should save articles and enqueue jobs', async () => {
       const news = [{}];
       const articles = [{ id: 1 } as TestArticle, { id: 2 } as TestArticle];
-      const source = SubscriptionSource.WarhammerCommunity;
 
       service.getUnsavedNews.mockResolvedValue(news);
       service.saveNews.mockResolvedValue(articles);
-      service.getSubscriptionSource.mockReturnValue(source);
       subscriptionService.getSubscribedChannels.mockResolvedValue([
         '111',
         '222',
@@ -91,15 +97,15 @@ describe(AbstractSourceService.name, () => {
 
       expect(service.saveNews).toHaveBeenCalledWith(news);
       expect(subscriptionService.getSubscribedChannels).toHaveBeenCalledWith(
-        source,
+        mockSource,
       );
       expect(queue.addBulk).toHaveBeenCalledWith([
         {
-          name: `${source}:111`,
+          name: `${mockSource.id}:111`,
           data: { channelId: '111', articleIds: [1, 2] },
         },
         {
-          name: `${source}:222`,
+          name: `${mockSource.id}:222`,
           data: { channelId: '222', articleIds: [1, 2] },
         },
       ]);

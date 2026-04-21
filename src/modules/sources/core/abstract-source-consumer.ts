@@ -5,7 +5,7 @@ import * as DiscordConstants from '@modules/discord/discord.constants';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger, OnModuleInit, Type } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { AbstractSourceService } from '@sources/abstract-source.service';
+import { AbstractSourceService } from '@sources/core/abstract-source-service';
 import * as Constants from '@sources/sources.constants';
 import * as Types from '@sources/sources.types';
 import { Job } from 'bullmq';

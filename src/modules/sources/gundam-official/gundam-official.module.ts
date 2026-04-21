@@ -6,10 +6,11 @@ import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { createSourceConsumer } from '@sources/abstract-source.consumer';
+import { createSourceConsumer } from '@sources/core/abstract-source-consumer';
 import { GundamOfficialApi } from '@sources/gundam-official/gundam-official.api';
 import * as Constants from '@sources/gundam-official/gundam-official.constants';
 import { GundamOfficialService } from '@sources/gundam-official/gundam-official.service';
+import { GundamOfficialSource } from '@sources/gundam-official/gundam-official.source';
 
 const GundamOfficialConsumer = createSourceConsumer<AbstractArticle>(
   Constants.GUNDAM_OFFICIAL_QUEUE,
@@ -38,6 +39,12 @@ const GundamOfficialConsumer = createSourceConsumer<AbstractArticle>(
       },
     }),
   ],
-  providers: [GundamOfficialConsumer, GundamOfficialService, GundamOfficialApi],
+  providers: [
+    GundamOfficialSource,
+    GundamOfficialConsumer,
+    GundamOfficialService,
+    GundamOfficialApi,
+  ],
+  exports: [GundamOfficialSource, GundamOfficialService],
 })
 export class GundamOfficialModule {}

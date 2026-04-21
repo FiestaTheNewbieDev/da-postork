@@ -1,7 +1,4 @@
-import {
-  Subscription,
-  SubscriptionSource,
-} from '@entities/subscription.entity';
+import { Subscription } from '@entities/subscription.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { CACHE_KEYS, CACHE_TTL } from '@modules/redis/redis.constants';
@@ -13,6 +10,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Source } from '@sources/core/abstract-source';
 
 @Injectable()
 export class SubscriptionService {
@@ -24,15 +22,15 @@ export class SubscriptionService {
     private readonly redisService: RedisService,
   ) {}
 
-  public async getSubscribedChannels(
-    source: SubscriptionSource,
-  ): Promise<string[]> {
+  public async getSubscribedChannels(source: Source): Promise<string[]> {
     const cacheKey = CACHE_KEYS.subscribedChannels(source);
     const cached = await this.redisService.client.get(cacheKey);
 
     if (cached) return JSON.parse(cached) as string[];
 
-    const subscriptions = await this.subscriptionRepo.find({ source });
+    const subscriptions = await this.subscriptionRepo.find({
+      source: source.id,
+    });
     const channelIds = subscriptions.map((s) => s.channelId);
 
     void this.redisService.client.setEx(
@@ -51,17 +49,23 @@ export class SubscriptionService {
   }
 
   public async subscribe(
-    source: SubscriptionSource,
+    source: Source,
     channelId: string,
   ): Promise<Subscription> {
-    const existing = await this.subscriptionRepo.findOne({ source, channelId });
+    const existing = await this.subscriptionRepo.findOne({
+      source: source.id,
+      channelId,
+    });
 
     if (existing)
       throw new ConflictException(
         Constants.ERROR_MESSAGES.alreadySubscribed(channelId, source),
       );
 
-    const subscription = this.subscriptionRepo.create({ source, channelId });
+    const subscription = this.subscriptionRepo.create({
+      source: source.id,
+      channelId,
+    });
     const em = this.subscriptionRepo.getEntityManager();
     em.persist(subscription);
     await em.flush();
@@ -71,12 +75,9 @@ export class SubscriptionService {
     return subscription;
   }
 
-  public async unsubscribe(
-    source: SubscriptionSource,
-    channelId: string,
-  ): Promise<void> {
+  public async unsubscribe(source: Source, channelId: string): Promise<void> {
     const subscription = await this.subscriptionRepo.findOne({
-      source,
+      source: source.id,
       channelId,
     });
 
@@ -93,7 +94,7 @@ export class SubscriptionService {
   }
 
   private async addToSubscribedChannelsCache(
-    source: SubscriptionSource,
+    source: Source,
     channelId: string,
   ): Promise<void> {
     const cacheKey = CACHE_KEYS.subscribedChannels(source);
@@ -110,7 +111,7 @@ export class SubscriptionService {
   }
 
   private async removeFromSubscribedChannelsCache(
-    source: SubscriptionSource,
+    source: Source,
     channelId: string,
   ): Promise<void> {
     const cacheKey = CACHE_KEYS.subscribedChannels(source);

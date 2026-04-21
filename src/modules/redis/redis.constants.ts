@@ -1,13 +1,12 @@
 import { Messages } from '@/types';
-import { SubscriptionSource } from '@entities/subscription.entity';
+import { Source } from '@sources/core/abstract-source';
 
 export const MESSAGES = {
   ready: () => 'Redis Client Connected',
 } as const satisfies Messages;
 
 export const CACHE_KEYS = {
-  subscribedChannels: (source: SubscriptionSource) =>
-    `subscriptions:channels:${source}`,
+  subscribedChannels: (source: Source) => `subscriptions:channels:${source.id}`,
 } as const;
 
 export const CACHE_TTL = {
