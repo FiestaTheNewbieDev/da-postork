@@ -1,6 +1,8 @@
 import { Messages } from '@/types';
 import { fmt } from '@utils/logger.utils';
 
+export const SOURCES = 'SOURCES';
+
 export const MESSAGES = {
   foundNewArticles: (count: number) =>
     `Found ${fmt.bold(count)} new article(s)`,

@@ -3,6 +3,7 @@ import {
   CodexYGOCategory,
   CodexYGOMember,
 } from '@entities/codexygo';
+import { SourceId } from '@entities/subscription.entity';
 import { codexygoArticleFactory } from '@factories/codexygo-article.factory';
 import { codexyGoCategoryFactory } from '@factories/codexygo-category.factory';
 import { codexygoMemberFactory } from '@factories/codexygo-member.factory';
@@ -110,6 +111,12 @@ describe(CodexYGOService.name, () => {
     api = { getNews: jest.fn() };
 
     service = new CodexYGOService(
+      {
+        id: SourceId.CodexYGO,
+        label: 'CodexYGO',
+        description: null,
+        url: null,
+      } as never,
       api as unknown as CodexYGOApi,
       articleRepo as unknown as EntityRepository<CodexYGOArticle>,
       categoryRepo as unknown as EntityRepository<CodexYGOCategory>,

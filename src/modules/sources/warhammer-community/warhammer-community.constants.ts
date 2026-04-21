@@ -1,4 +1,6 @@
 export const WARHAMMER_COMMUNITY_LABEL = 'Warhammer Community';
+export const WARHAMMER_COMMUNITY_DESCRIPTION =
+  'The essential Warhammer news and features site';
 
 export const WARHAMMER_COMMUNITY_WEBSITE_BASE_URL =
   'https://www.warhammer-community.com';

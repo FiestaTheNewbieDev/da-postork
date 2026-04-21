@@ -1,9 +1,10 @@
-import { SubscriptionSource } from '@entities/subscription.entity';
+import { SourceId } from '@entities/subscription.entity';
 import { subscriptionFactory } from '@factories/subscription.factory';
 import { SubscriptionCommands } from '@modules/subscription/subscription.commands';
 import * as Constants from '@modules/subscription/subscription.constants';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { Source } from '@sources/core/abstract-source';
 import { ChatInputCommandInteraction } from 'discord.js';
 
 jest.mock(
@@ -22,7 +23,16 @@ jest.mock(
 );
 
 describe(SubscriptionCommands.name, () => {
-  const source = SubscriptionSource.WarhammerCommunity;
+  const source = SourceId.WarhammerCommunity;
+  const mockSource: Source = {
+    id: source,
+    label: 'Warhammer Community',
+    description: 'The essential Warhammer news and features site',
+    url: 'https://www.warhammer-community.com',
+    toDiscordString: () =>
+      '[`Warhammer Community`](https://www.warhammer-community.com)',
+    toString: () => 'Warhammer Community',
+  } as Source;
   const channelId = '111';
 
   let commands: SubscriptionCommands;
@@ -49,7 +59,14 @@ describe(SubscriptionCommands.name, () => {
       editReply: jest.fn().mockResolvedValue(undefined),
     };
 
-    commands = new SubscriptionCommands(subscriptionService, {} as never);
+    commands = new SubscriptionCommands(
+      subscriptionService,
+      {} as never,
+      {
+        resolve: jest.fn().mockReturnValue(mockSource),
+        getAll: jest.fn().mockReturnValue([mockSource]),
+      } as never,
+    );
   });
 
   afterEach(() => {
@@ -62,20 +79,18 @@ describe(SubscriptionCommands.name, () => {
 
       await commands.onSubscribe(
         [interaction as unknown as ChatInputCommandInteraction],
-        {
-          source,
-        },
+        { sourceId: source },
       );
 
       expect(subscriptionService.subscribe).toHaveBeenCalledWith(
-        source,
+        mockSource,
         channelId,
       );
       expect(interaction.deferReply).toHaveBeenCalledWith({
         flags: ['Ephemeral'],
       });
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.subscribeSuccess(channelId, source),
+        content: Constants.REPLIES.subscribeSuccess(channelId, mockSource),
       });
     });
 
@@ -84,13 +99,11 @@ describe(SubscriptionCommands.name, () => {
 
       await commands.onSubscribe(
         [interaction as unknown as ChatInputCommandInteraction],
-        {
-          source,
-        },
+        { sourceId: source },
       );
 
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.alreadySubscribed(channelId, source),
+        content: Constants.REPLIES.alreadySubscribed(channelId, mockSource),
       });
     });
 
@@ -99,13 +112,11 @@ describe(SubscriptionCommands.name, () => {
 
       await commands.onSubscribe(
         [interaction as unknown as ChatInputCommandInteraction],
-        {
-          source,
-        },
+        { sourceId: source },
       );
 
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.subscribeError(channelId, source),
+        content: Constants.REPLIES.subscribeError(channelId, mockSource),
       });
     });
   });
@@ -116,18 +127,18 @@ describe(SubscriptionCommands.name, () => {
 
       await commands.onUnsubscribe(
         [interaction as unknown as ChatInputCommandInteraction],
-        { source },
+        { sourceId: source },
       );
 
       expect(subscriptionService.unsubscribe).toHaveBeenCalledWith(
-        source,
+        mockSource,
         channelId,
       );
       expect(interaction.deferReply).toHaveBeenCalledWith({
         flags: ['Ephemeral'],
       });
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.unsubscribeSuccess(channelId, source),
+        content: Constants.REPLIES.unsubscribeSuccess(channelId, mockSource),
       });
     });
 
@@ -138,13 +149,11 @@ describe(SubscriptionCommands.name, () => {
 
       await commands.onUnsubscribe(
         [interaction as unknown as ChatInputCommandInteraction],
-        {
-          source,
-        },
+        { sourceId: source },
       );
 
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.notSubscribed(channelId, source),
+        content: Constants.REPLIES.notSubscribed(channelId, mockSource),
       });
     });
 
@@ -153,13 +162,11 @@ describe(SubscriptionCommands.name, () => {
 
       await commands.onUnsubscribe(
         [interaction as unknown as ChatInputCommandInteraction],
-        {
-          source,
-        },
+        { sourceId: source },
       );
 
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.unsubscribeError(channelId, source),
+        content: Constants.REPLIES.unsubscribeError(channelId, mockSource),
       });
     });
   });
@@ -167,11 +174,8 @@ describe(SubscriptionCommands.name, () => {
   describe('onSubscriptions', () => {
     it('should reply with the subscriptions list', async () => {
       const subscriptions = [
-        subscriptionFactory({
-          source: SubscriptionSource.WarhammerCommunity,
-          channelId,
-        }),
-        subscriptionFactory({ source: SubscriptionSource.CodexYGO, channelId }),
+        subscriptionFactory({ source: SourceId.WarhammerCommunity, channelId }),
+        subscriptionFactory({ source: SourceId.CodexYGO, channelId }),
       ];
       subscriptionService.getChannelSubscriptions.mockResolvedValue(
         subscriptions,
@@ -188,7 +192,10 @@ describe(SubscriptionCommands.name, () => {
         flags: ['Ephemeral'],
       });
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.subscriptions(channelId, subscriptions),
+        content: Constants.REPLIES.subscriptions(channelId, [
+          mockSource,
+          mockSource,
+        ]),
       });
     });
 

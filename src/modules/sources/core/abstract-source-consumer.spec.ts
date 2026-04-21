@@ -1,7 +1,7 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
 import { MikroORM } from '@mikro-orm/core';
-import { AbstractSourceConsumer } from '@sources/abstract-source.consumer';
-import { AbstractSourceService } from '@sources/abstract-source.service';
+import { AbstractSourceConsumer } from '@sources/core/abstract-source-consumer';
+import { AbstractSourceService } from '@sources/core/abstract-source-service';
 import * as Constants from '@sources/sources.constants';
 import * as Types from '@sources/sources.types';
 import { Job } from 'bullmq';

@@ -1,3 +1,4 @@
+import { SourceId } from '@entities/subscription.entity';
 import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
 import { warhammerCommunityArticleFactory } from '@factories/warhammer-community-article.factory';
 import { MikroORM } from '@mikro-orm/core';
@@ -59,6 +60,12 @@ describe(WarhammerCommunityService.name, () => {
     api = { getNews: jest.fn() };
 
     service = new WarhammerCommunityService(
+      {
+        id: SourceId.WarhammerCommunity,
+        label: 'Warhammer Community',
+        description: null,
+        url: null,
+      } as never,
       api as unknown as WarhammerCommunityApi,
       articleRepo as unknown as EntityRepository<WarhammerCommunityArticle>,
       {} as MikroORM,
