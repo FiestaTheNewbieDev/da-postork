@@ -20,10 +20,10 @@ export class CodexYGOCategory {
   })
   readonly codexygoOid!: number;
 
-  @Property({ name: 'name', type: 'varchar(64)', nullable: false })
+  @Property({ name: 'name', columnType: 'varchar(64)', nullable: false })
   name!: string;
 
-  @Property({ name: 'path', type: 'varchar(255)', nullable: false })
+  @Property({ name: 'path', columnType: 'varchar(255)', nullable: false })
   path!: string;
 
   @Property({

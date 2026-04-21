@@ -233,7 +233,7 @@
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO"]
+          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
         }
       },
       "comment": null
@@ -326,7 +326,7 @@
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO"]
+          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
         }
       },
       "comment": null
@@ -367,13 +367,13 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar(255)",
+          "type": "varchar(64)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": 64,
           "precision": null,
           "scale": null,
           "default": null,
@@ -472,7 +472,7 @@
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO"]
+          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
         }
       },
       "comment": null
@@ -513,13 +513,13 @@
         },
         "username": {
           "name": "username",
-          "type": "varchar(255)",
+          "type": "varchar(64)",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
           "unique": false,
-          "length": 255,
+          "length": 64,
           "precision": null,
           "scale": null,
           "default": null,
@@ -602,7 +602,185 @@
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO"]
+          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+        }
+      },
+      "comment": null
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int4",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "gundam_official_document_id": {
+          "name": "gundam_official_document_id",
+          "type": "varchar(64)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": 64,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "gundam_official_slug": {
+          "name": "gundam_official_slug",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "thumbnail_url": {
+          "name": "thumbnail_url",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        }
+      },
+      "name": "gundam_official_article",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": ["gundam_official_document_id"],
+          "composite": false,
+          "constraint": true,
+          "keyName": "gundam_official_article_gundam_official_document_id_unique",
+          "unique": true,
+          "primary": false
+        },
+        {
+          "columnNames": ["id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "gundam_official_article_pkey",
+          "unique": true,
+          "primary": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {
+        "subscription_source": {
+          "name": "subscription_source",
+          "schema": "public",
+          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
         }
       },
       "comment": null
@@ -622,7 +800,7 @@
           "scale": null,
           "default": null,
           "comment": null,
-          "enumItems": ["WARHAMMER_COMMUNITY", "CODEXYGO"],
+          "enumItems": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"],
           "mappedType": "unknown",
           "nativeEnumName": "subscription_source"
         },
@@ -677,7 +855,7 @@
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO"]
+          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
         }
       },
       "comment": null
@@ -903,7 +1081,7 @@
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO"]
+          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
         }
       },
       "comment": null
@@ -913,7 +1091,7 @@
     "subscription_source": {
       "name": "subscription_source",
       "schema": "public",
-      "items": ["WARHAMMER_COMMUNITY", "CODEXYGO"]
+      "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
     }
   }
 }
