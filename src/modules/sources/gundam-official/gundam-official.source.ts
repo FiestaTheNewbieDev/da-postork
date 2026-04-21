@@ -5,8 +5,8 @@ import * as Constants from '@sources/gundam-official/gundam-official.constants';
 
 @Injectable()
 export class GundamOfficialSource extends Source {
-  readonly id = SourceId.GundamOfficial;
-  readonly label = Constants.GUNDAM_OFFICIAL_LABEL;
-  readonly description = Constants.GUNDAM_OFFICIAL_DESCRIPTION;
-  readonly url = Constants.GUNDAM_OFFICIAL_WEBSITE_BASE_URL;
+  public readonly id = SourceId.GundamOfficial;
+  public readonly label = Constants.GUNDAM_OFFICIAL_LABEL;
+  public readonly description = Constants.GUNDAM_OFFICIAL_DESCRIPTION;
+  public readonly url = Constants.GUNDAM_OFFICIAL_WEBSITE_BASE_URL;
 }

@@ -5,8 +5,8 @@ import { Source } from '@sources/core/abstract-source';
 
 @Injectable()
 export class CodexYGOSource extends Source {
-  readonly id = SourceId.CodexYGO;
-  readonly label = Constants.CODEXYGO_LABEL;
-  readonly description = Constants.CODEXYGO_DESCRIPTION;
-  readonly url = Constants.CODEXYGO_WEBSITE_BASE_URL;
+  public readonly id = SourceId.CodexYGO;
+  public readonly label = Constants.CODEXYGO_LABEL;
+  public readonly description = Constants.CODEXYGO_DESCRIPTION;
+  public readonly url = Constants.CODEXYGO_WEBSITE_BASE_URL;
 }

@@ -5,8 +5,8 @@ import * as Constants from '@sources/warhammer-community/warhammer-community.con
 
 @Injectable()
 export class WarhammerCommunitySource extends Source {
-  readonly id = SourceId.WarhammerCommunity;
-  readonly label = Constants.WARHAMMER_COMMUNITY_LABEL;
-  readonly description = Constants.WARHAMMER_COMMUNITY_DESCRIPTION;
-  readonly url = Constants.WARHAMMER_COMMUNITY_WEBSITE_BASE_URL;
+  public readonly id = SourceId.WarhammerCommunity;
+  public readonly label = Constants.WARHAMMER_COMMUNITY_LABEL;
+  public readonly description = Constants.WARHAMMER_COMMUNITY_DESCRIPTION;
+  public readonly url = Constants.WARHAMMER_COMMUNITY_WEBSITE_BASE_URL;
 }

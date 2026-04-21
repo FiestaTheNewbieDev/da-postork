@@ -14,8 +14,8 @@ export abstract class Source {
   }
 
   public toDiscordString(): string {
-    return discordFmt.code(
-      this.url ? discordFmt.link(this.label, this.url) : this.label,
-    );
+    return this.url
+      ? discordFmt.link(discordFmt.code(this.label), this.url)
+      : discordFmt.code(this.label);
   }
 }
