@@ -1,9 +1,9 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
-import { SubscriptionSource } from '@entities/subscription.entity';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Source } from '@sources/core/abstract-source';
 import * as Constants from '@sources/sources.constants';
 import * as Types from '@sources/sources.types';
 import { Queue } from 'bullmq';
@@ -17,6 +17,7 @@ export abstract class AbstractSourceService<
   protected readonly logger = new Logger(this.constructor.name);
 
   constructor(
+    protected readonly source: Source,
     protected readonly orm: MikroORM,
     protected readonly subscriptionService: SubscriptionService,
     protected readonly queue: Queue<Types.SourceJobData>,
@@ -45,13 +46,12 @@ export abstract class AbstractSourceService<
       this.logger.log(Constants.MESSAGES.newArticlesSaved(articles.length));
 
       const channelIds = await this.subscriptionService.getSubscribedChannels(
-        this.getSubscriptionSource(),
+        this.source,
       );
       const articleIds = articles.map((a) => a.id as number);
 
-      const source = this.getSubscriptionSource();
       const jobs = channelIds.map((channelId) => ({
-        name: `${source}:${channelId}`,
+        name: `${this.source.id}:${channelId}`,
         data: { channelId, articleIds } as Types.SourceJobData,
       }));
 
@@ -70,8 +70,6 @@ export abstract class AbstractSourceService<
 
   protected abstract getUnsavedNews(): Promise<TNews[]>;
   protected abstract saveNews(news: TNews[]): Promise<TArticle[]>;
-
-  protected abstract getSubscriptionSource(): SubscriptionSource;
 
   public abstract getArticlesByIds(ids: number[]): Promise<TArticle[]>;
   public abstract buildEmbed(article: TArticle): EmbedBuilder;

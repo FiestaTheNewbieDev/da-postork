@@ -5,10 +5,11 @@ import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { createSourceConsumer } from '@sources/abstract-source.consumer';
+import { createSourceConsumer } from '@sources/core/abstract-source-consumer';
 import { WarhammerCommunityApi } from '@sources/warhammer-community/warhammer-community.api';
 import * as Constants from '@sources/warhammer-community/warhammer-community.constants';
 import { WarhammerCommunityService } from '@sources/warhammer-community/warhammer-community.service';
+import { WarhammerCommunitySource } from '@sources/warhammer-community/warhammer-community.source';
 
 const WarhammerCommunityConsumer =
   createSourceConsumer<WarhammerCommunityArticle>(
@@ -40,10 +41,11 @@ const WarhammerCommunityConsumer =
     }),
   ],
   providers: [
+    WarhammerCommunitySource,
     WarhammerCommunityService,
     WarhammerCommunityApi,
     WarhammerCommunityConsumer,
   ],
-  exports: [],
+  exports: [WarhammerCommunitySource, WarhammerCommunityService],
 })
 export class WarhammerCommunityModule {}

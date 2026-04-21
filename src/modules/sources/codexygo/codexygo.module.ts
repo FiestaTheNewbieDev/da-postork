@@ -5,10 +5,11 @@ import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { createSourceConsumer } from '@sources/abstract-source.consumer';
 import { CodexYGOApi } from '@sources/codexygo/codexygo.api';
 import * as Constants from '@sources/codexygo/codexygo.constants';
 import { CodexYGOService } from '@sources/codexygo/codexygo.service';
+import { CodexYGOSource } from '@sources/codexygo/codexygo.source';
+import { createSourceConsumer } from '@sources/core/abstract-source-consumer';
 
 const CodexYGOConsumer = createSourceConsumer<Entities.CodexYGOArticle>(
   Constants.CODEXYGO_QUEUE,
@@ -37,7 +38,7 @@ const CodexYGOConsumer = createSourceConsumer<Entities.CodexYGOArticle>(
       },
     }),
   ],
-  providers: [CodexYGOConsumer, CodexYGOApi, CodexYGOService],
-  exports: [],
+  providers: [CodexYGOSource, CodexYGOConsumer, CodexYGOApi, CodexYGOService],
+  exports: [CodexYGOSource, CodexYGOService],
 })
 export class CodexYGOModule {}
