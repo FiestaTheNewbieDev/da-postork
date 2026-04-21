@@ -4,5 +4,9 @@
   "trailingComma": "all",
   "tabWidth": 2,
   "useTabs": false,
-  "plugins": ["prettier-plugin-organize-imports"]
+  "plugins": [
+    "prettier-plugin-organize-imports",
+    "prettier-plugin-jsdoc",
+    "prettier-plugin-packagejson"
+  ]
 }

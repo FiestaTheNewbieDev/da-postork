@@ -11,6 +11,22 @@ import * as Types from '@sources/sources.types';
 import { Job } from 'bullmq';
 import { Client, GuildChannel } from 'discord.js';
 
+/**
+ * Factory that produces a NestJS-injectable BullMQ processor class for a given
+ * queue.
+ *
+ * NestJS requires concrete classes with known DI tokens at compile time, so the
+ * `@Processor` decorator and `design:paramtypes` metadata are applied
+ * dynamically here rather than on the abstract base.
+ *
+ * @template TArticle - The article entity type handled by this consumer.
+ * @param queueName - The BullMQ queue name to bind the processor to.
+ * @param serviceType - The concrete {@link AbstractSourceService} class used as
+ *   DI token.
+ * @param concurrency - Number of jobs processed in parallel (default: 4).
+ * @returns A concrete, decorated class ready to be registered as a NestJS
+ *   provider.
+ */
 export function createSourceConsumer<TArticle extends AbstractArticle>(
   queueName: string,
   serviceType: Type<AbstractSourceService<TArticle>>,
@@ -34,6 +50,15 @@ export function createSourceConsumer<TArticle extends AbstractArticle>(
   return SourceConsumer;
 }
 
+/**
+ * Abstract BullMQ worker that consumes jobs enqueued by
+ * {@link AbstractSourceService} and posts Discord embeds.
+ *
+ * The worker starts paused and resumes only once the Discord client is ready,
+ * preventing jobs from being processed before the bot is connected.
+ *
+ * @template TArticle - The article entity type handled by this consumer.
+ */
 export abstract class AbstractSourceConsumer<TArticle extends AbstractArticle>
   extends WorkerHost
   implements OnModuleInit
