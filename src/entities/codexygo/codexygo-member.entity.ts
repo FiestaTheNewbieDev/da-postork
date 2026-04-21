@@ -22,7 +22,7 @@ export class CodexYGOMember {
 
   @Property({
     name: 'username',
-    type: 'varchar(64)',
+    columnType: 'varchar(64)',
     nullable: false,
   })
   username!: string;

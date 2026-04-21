@@ -5,6 +5,7 @@ import {
 } from '@entities/subscription.entity';
 import { fmt as discordFmt } from '@modules/discord/discord.utils';
 import * as CodexYGOConstants from '@sources/codexygo/codexygo.constants';
+import * as GundamOfficialConstants from '@sources/gundam-official/gundam-official.constants';
 import * as WarhammerCommunityConstants from '@sources/warhammer-community/warhammer-community.constants';
 import { fmt as loggerFmt } from '@utils/logger.utils';
 
@@ -20,6 +21,13 @@ export const SOURCE_METADATA = {
     description: "Le site n° 1 sur l'information pour Yu-Gi-Oh! en France.",
     url: CodexYGOConstants.CODEXYGO_WEBSITE_BASE_URL,
     value: SubscriptionSource.CodexYGO,
+  },
+  [SubscriptionSource.GundamOfficial]: {
+    label: GundamOfficialConstants.GUNDAM_OFFICIAL_LABEL,
+    description:
+      'Stay up to date with the latest Gundam news, covering anime, movies, products, and events.',
+    url: GundamOfficialConstants.GUNDAM_OFFICIAL_WEBSITE_BASE_URL,
+    value: SubscriptionSource.GundamOfficial,
   },
 } as const satisfies {
   [K in SubscriptionSource]: {

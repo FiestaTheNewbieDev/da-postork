@@ -31,7 +31,7 @@ export class CodexYGOArticle extends AbstractArticle {
 
   @Property({
     name: 'codexygo_slug',
-    type: 'varchar(255)',
+    columnType: 'varchar(255)',
     nullable: false,
   })
   readonly codexygoSlug!: string;
@@ -44,7 +44,7 @@ export class CodexYGOArticle extends AbstractArticle {
 
   @Property({
     name: 'tags',
-    type: 'jsonb',
+    columnType: 'jsonb',
     nullable: false,
   })
   tags!: string[];

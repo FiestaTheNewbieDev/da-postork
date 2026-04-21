@@ -7,7 +7,7 @@ on:
 jobs:
   lint:
     name: Lint
-    runs-on: [self-hosted, ci]
+    runs-on: ubuntu-latest
     container: node:24
     permissions:
       contents: read
@@ -28,7 +28,7 @@ jobs:
 
   build:
     name: Build
-    runs-on: [self-hosted, ci]
+    runs-on: ubuntu-latest
     container: node:24
     permissions:
       contents: read
@@ -50,7 +50,7 @@ jobs:
 
   test:
     name: Test
-    runs-on: [self-hosted, ci]
+    runs-on: ubuntu-latest
     container: node:24
     permissions:
       contents: read

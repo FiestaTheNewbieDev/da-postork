@@ -3,6 +3,7 @@ import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
 export enum SubscriptionSource {
   WarhammerCommunity = 'WARHAMMER_COMMUNITY',
   CodexYGO = 'CODEXYGO',
+  GundamOfficial = 'GUNDAM_OFFICIAL',
 }
 
 @Entity({

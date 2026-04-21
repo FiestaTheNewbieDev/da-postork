@@ -75,9 +75,7 @@ export class WarhammerCommunityService extends AbstractSourceService<
     return SubscriptionSource.WarhammerCommunity;
   }
 
-  public async getArticlesByIds(
-    ids: number[],
-  ): Promise<WarhammerCommunityArticle[]> {
+  public getArticlesByIds(ids: number[]): Promise<WarhammerCommunityArticle[]> {
     return this.articleRepo.find(
       { id: { $in: ids } },
       { orderBy: { publishedAt: 'asc' } },
@@ -91,9 +89,10 @@ export class WarhammerCommunityService extends AbstractSourceService<
   }
 
   public static buildAssetUrl(assetPath: string): string {
-    const url = new URL('https://assets.warhammer-community.com');
-    url.pathname = `/${assetPath}`;
-    return url.toString();
+    return new URL(
+      assetPath,
+      'https://assets.warhammer-community.com',
+    ).toString();
   }
 
   public buildEmbed(article: WarhammerCommunityArticle): EmbedBuilder {
