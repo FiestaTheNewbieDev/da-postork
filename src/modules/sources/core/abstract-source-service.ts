@@ -2,20 +2,21 @@ import { AbstractArticle } from '@entities/abstract-article.entity';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger, OnModuleInit } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Source } from '@sources/core/source';
 import * as Constants from '@sources/sources.constants';
 import * as Types from '@sources/sources.types';
 import { Queue } from 'bullmq';
+import { CronJob } from 'cron';
 import { EmbedBuilder, GuildEmoji } from 'discord.js';
 
 /**
  * Abstract base service for news sources.
  *
- * Handles the full fetch→save→enqueue pipeline on an hourly cron. Each concrete
- * source must implement the data-fetching and persistence logic via
- * {@link getUnsavedNews} and {@link saveNews}, as well as Discord presentation
- * via {@link buildEmbed} and {@link getArticlesByIds}.
+ * Handles the full fetch→save→enqueue pipeline on a configurable set of cron
+ * schedules. Each concrete source must implement the data-fetching and
+ * persistence logic via {@link getUnsavedNews} and {@link saveNews}, as well as
+ * Discord presentation via {@link buildEmbed} and {@link getArticlesByIds}.
  *
  * @template TArticle - The MikroORM entity type for this source's articles.
  * @template TNews - The raw API response type before persistence.
@@ -31,21 +32,37 @@ export abstract class AbstractSourceService<
     protected readonly orm: MikroORM,
     protected readonly subscriptionService: SubscriptionService,
     protected readonly queue: Queue<Types.SourceJobData>,
+    protected readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
   onModuleInit() {
-    void this.handleCron();
+    this.schedules.forEach(({ expression, timezone }, index) => {
+      const job = CronJob.from({
+        cronTime: expression,
+        onTick: () => void this.process(),
+        timeZone: timezone,
+      });
+      this.schedulerRegistry.addCronJob(
+        `${this.constructor.name}:${index}`,
+        job,
+      );
+      job.start();
+    });
+
+    void this.process();
+  }
+
+  /** Returns the cron schedules to register. Override to customize. */
+  protected get schedules(): CronSchedule[] {
+    return [{ expression: '0 * * * *', timezone: 'UTC' }];
   }
 
   /**
-   * Runs every hour (UTC) and immediately on module init.
-   *
    * Fetches unsaved articles, persists them, then enqueues one BullMQ job per
    * subscribed channel so the consumer can post Discord embeds independently.
    */
-  @Cron(CronExpression.EVERY_HOUR, { timeZone: 'UTC' })
   @CreateRequestContext()
-  protected async handleCron() {
+  private async process() {
     try {
       const unsavedNews = await this.getUnsavedNews();
 
@@ -84,8 +101,6 @@ export abstract class AbstractSourceService<
    * Returns the default emoji reactions added to each posted article.
    *
    * Override to customize reactions for a specific source.
-   *
-   * @returns An array of emoji strings or guild emojis.
    */
   public getReactions(): (string | GuildEmoji)[] {
     return ['👍', '😐', '👎'];
@@ -112,8 +127,6 @@ export abstract class AbstractSourceService<
   /**
    * Retrieves persisted articles by their IDs.
    *
-   * Used by the queue consumer to load articles before posting embeds.
-   *
    * @param ids - Article IDs to fetch.
    * @returns The matching article entities.
    */
@@ -127,3 +140,8 @@ export abstract class AbstractSourceService<
    */
   public abstract buildEmbed(article: TArticle): EmbedBuilder;
 }
+
+type CronSchedule = {
+  expression: string;
+  timezone: string;
+};

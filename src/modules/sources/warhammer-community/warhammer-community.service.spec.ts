@@ -4,6 +4,7 @@ import { warhammerCommunityArticleFactory } from '@factories/warhammer-community
 import { MikroORM } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { Source } from '@sources/core/source';
 import { SourceJobData } from '@sources/sources.types';
 import { WarhammerCommunityApi } from '@sources/warhammer-community/warhammer-community.api';
@@ -74,6 +75,7 @@ describe(WarhammerCommunityService.name, () => {
       {} as MikroORM,
       {} as SubscriptionService,
       {} as Queue<SourceJobData>,
+      { addCronJob: jest.fn() } as unknown as SchedulerRegistry,
     );
   });
 

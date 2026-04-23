@@ -6,6 +6,7 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { AbstractSourceService } from '@sources/core/abstract-source-service';
 import { Source } from '@sources/core/source';
 import { SourceJobData } from '@sources/sources.types';
@@ -28,8 +29,17 @@ export class WarhammerCommunityService extends AbstractSourceService<
     subscriptionService: SubscriptionService,
     @InjectQueue(Constants.WARHAMMER_COMMUNITY_QUEUE)
     queue: Queue<SourceJobData>,
+    schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue);
+    super(orm, subscriptionService, queue, schedulerRegistry);
+  }
+
+  protected get schedules() {
+    return [
+      { expression: '0 22-23 * * *', timezone: 'Europe/London' },
+      { expression: '0 0-7 * * *', timezone: 'Europe/London' },
+      { expression: '*/30 8-21 * * *', timezone: 'Europe/London' },
+    ];
   }
 
   protected get source(): Source {

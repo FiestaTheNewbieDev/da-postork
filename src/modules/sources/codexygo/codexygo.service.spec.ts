@@ -10,6 +10,7 @@ import { codexygoMemberFactory } from '@factories/codexygo-member.factory';
 import { MikroORM } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { CodexYGOApi } from '@sources/codexygo/codexygo.api';
 import * as Constants from '@sources/codexygo/codexygo.constants';
 import { CodexYGOService } from '@sources/codexygo/codexygo.service';
@@ -121,6 +122,7 @@ describe(CodexYGOService.name, () => {
       orm as unknown as MikroORM,
       {} as SubscriptionService,
       {} as Queue<SourceJobData>,
+      { addCronJob: jest.fn() } as unknown as SchedulerRegistry,
     );
   });
 

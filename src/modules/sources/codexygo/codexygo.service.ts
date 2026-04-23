@@ -10,6 +10,7 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { CodexYGOApi } from '@sources/codexygo/codexygo.api';
 import * as Constants from '@sources/codexygo/codexygo.constants';
 import * as Types from '@sources/codexygo/codexygo.types';
@@ -36,8 +37,17 @@ export class CodexYGOService extends AbstractSourceService<
     subscriptionService: SubscriptionService,
     @InjectQueue(Constants.CODEXYGO_QUEUE)
     queue: Queue<SourceJobData>,
+    schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue);
+    super(orm, subscriptionService, queue, schedulerRegistry);
+  }
+
+  protected get schedules() {
+    return [
+      { expression: '0 22-23 * * *', timezone: 'Europe/Paris' },
+      { expression: '0 0-7 * * *', timezone: 'Europe/Paris' },
+      { expression: '*/30 8-21 * * *', timezone: 'Europe/Paris' },
+    ];
   }
 
   protected get source(): Source {

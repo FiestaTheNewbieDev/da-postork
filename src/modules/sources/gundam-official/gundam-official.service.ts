@@ -7,6 +7,7 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { AbstractSourceService } from '@sources/core/abstract-source-service';
 import { Source } from '@sources/core/source';
 import { GundamOfficialApi } from '@sources/gundam-official/gundam-official.api';
@@ -29,8 +30,17 @@ export class GundamOfficialService extends AbstractSourceService<
     subscriptionService: SubscriptionService,
     @InjectQueue(Constants.GUNDAM_OFFICIAL_QUEUE)
     queue: Queue<SourceJobData>,
+    schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue);
+    super(orm, subscriptionService, queue, schedulerRegistry);
+  }
+
+  protected get schedules() {
+    return [
+      { expression: '0 22-23 * * *', timezone: 'Asia/Tokyo' },
+      { expression: '0 0-7 * * *', timezone: 'Asia/Tokyo' },
+      { expression: '*/30 8-21 * * *', timezone: 'Asia/Tokyo' },
+    ];
   }
 
   protected get source(): Source {

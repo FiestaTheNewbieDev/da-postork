@@ -3,6 +3,7 @@ import { SourceId } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { AbstractSourceService } from '@sources/core/abstract-source-service';
 import { Source } from '@sources/core/source';
 import * as Constants from '@sources/sources.constants';
@@ -32,8 +33,9 @@ class TestSourceService extends AbstractSourceService<TestArticle> {
     orm: MikroORM,
     subscriptionService: SubscriptionService,
     queue: Queue<SourceJobData>,
+    schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue);
+    super(orm, subscriptionService, queue, schedulerRegistry);
     this.source = source;
   }
 }
@@ -44,6 +46,7 @@ describe(AbstractSourceService.name, () => {
   let mockSource: Source;
   let subscriptionService: { getSubscribedChannels: jest.Mock };
   let queue: { addBulk: jest.Mock };
+  let schedulerRegistry: { addCronJob: jest.Mock };
 
   beforeEach(() => {
     Source.clearRegistry();
@@ -52,40 +55,43 @@ describe(AbstractSourceService.name, () => {
     });
     subscriptionService = { getSubscribedChannels: jest.fn() };
     queue = { addBulk: jest.fn().mockResolvedValue(undefined) };
+    schedulerRegistry = { addCronJob: jest.fn() };
 
     service = new TestSourceService(
       mockSource,
       {} as MikroORM,
       subscriptionService as unknown as SubscriptionService,
       queue as unknown as Queue<SourceJobData>,
+      schedulerRegistry as unknown as SchedulerRegistry,
     );
   });
 
   describe('onModuleInit', () => {
-    it('should call handleCron', () => {
-      jest
+    it('should register cron jobs and trigger an immediate process', () => {
+      const process = jest
         .spyOn(
-          service as unknown as { handleCron: () => Promise<void> },
-          'handleCron',
+          service as unknown as { process: () => Promise<void> },
+          'process',
         )
         .mockResolvedValue(undefined);
 
       service.onModuleInit();
 
-      expect(
-        (service as unknown as { handleCron: jest.Mock }).handleCron,
-      ).toHaveBeenCalled();
+      expect(schedulerRegistry.addCronJob).toHaveBeenCalledTimes(
+        service['schedules'].length,
+      );
+      expect(process).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('handleCron', () => {
-    const handleCron = () =>
-      (service as unknown as { handleCron: () => Promise<void> }).handleCron();
+  describe('process', () => {
+    const process = () =>
+      (service as unknown as { process: () => Promise<void> }).process();
 
     it('should log when there are no new articles', async () => {
       service.getUnsavedNews.mockResolvedValue([]);
 
-      await handleCron();
+      await process();
 
       expect(Logger.prototype.log).toHaveBeenCalledWith(
         Constants.MESSAGES.noNewArticles(),
@@ -103,7 +109,7 @@ describe(AbstractSourceService.name, () => {
         '222',
       ]);
 
-      await handleCron();
+      await process();
 
       expect(service.saveNews).toHaveBeenCalledWith(news);
       expect(subscriptionService.getSubscribedChannels).toHaveBeenCalledWith(
@@ -125,7 +131,7 @@ describe(AbstractSourceService.name, () => {
       const error = new Error('fetch failed');
       service.getUnsavedNews.mockRejectedValue(error);
 
-      await handleCron();
+      await process();
 
       expect(Logger.prototype.error).toHaveBeenCalledWith(error);
     });
