@@ -3,7 +3,7 @@ import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Source } from '@sources/core/abstract-source';
+import { Source } from '@sources/core/source';
 import * as Constants from '@sources/sources.constants';
 import * as Types from '@sources/sources.types';
 import { Queue } from 'bullmq';
@@ -28,7 +28,6 @@ export abstract class AbstractSourceService<
   protected readonly logger = new Logger(this.constructor.name);
 
   constructor(
-    protected readonly source: Source,
     protected readonly orm: MikroORM,
     protected readonly subscriptionService: SubscriptionService,
     protected readonly queue: Queue<Types.SourceJobData>,
@@ -91,6 +90,8 @@ export abstract class AbstractSourceService<
   public getReactions(): (string | GuildEmoji)[] {
     return ['👍', '😐', '👎'];
   }
+
+  protected abstract get source(): Source;
 
   /**
    * Fetches articles from the external source and filters out already-persisted

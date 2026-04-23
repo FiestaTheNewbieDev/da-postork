@@ -1,5 +1,6 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
 import { GundamOfficialArticle } from '@entities/gundam-official-article.entity';
+import { SourceId } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
@@ -7,9 +8,9 @@ import { SubscriptionService } from '@modules/subscription/subscription.service'
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { AbstractSourceService } from '@sources/core/abstract-source-service';
+import { Source } from '@sources/core/source';
 import { GundamOfficialApi } from '@sources/gundam-official/gundam-official.api';
 import * as Constants from '@sources/gundam-official/gundam-official.constants';
-import { GundamOfficialSource } from '@sources/gundam-official/gundam-official.source';
 import * as Types from '@sources/gundam-official/gundam-official.types';
 import { SourceJobData } from '@sources/sources.types';
 import { Queue } from 'bullmq';
@@ -21,7 +22,6 @@ export class GundamOfficialService extends AbstractSourceService<
   unknown
 > {
   constructor(
-    source: GundamOfficialSource,
     private readonly api: GundamOfficialApi,
     @InjectRepository(GundamOfficialArticle)
     private readonly articleRepo: EntityRepository<GundamOfficialArticle>,
@@ -30,7 +30,11 @@ export class GundamOfficialService extends AbstractSourceService<
     @InjectQueue(Constants.GUNDAM_OFFICIAL_QUEUE)
     queue: Queue<SourceJobData>,
   ) {
-    super(source, orm, subscriptionService, queue);
+    super(orm, subscriptionService, queue);
+  }
+
+  protected get source(): Source {
+    return Source.resolve(SourceId.GundamOfficial);
   }
 
   protected async getUnsavedNews(): Promise<Types.News[]> {

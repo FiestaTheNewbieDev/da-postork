@@ -4,7 +4,7 @@ import { SubscriptionCommands } from '@modules/subscription/subscription.command
 import * as Constants from '@modules/subscription/subscription.constants';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { Source } from '@sources/core/abstract-source';
+import { Source } from '@sources/core/source';
 import { ChatInputCommandInteraction } from 'discord.js';
 
 jest.mock(
@@ -45,6 +45,9 @@ describe(SubscriptionCommands.name, () => {
   };
 
   beforeEach(() => {
+    Source.clearRegistry();
+    Source.register(mockSource);
+
     subscriptionService = {
       subscribe: jest.fn(),
       unsubscribe: jest.fn(),
@@ -59,17 +62,11 @@ describe(SubscriptionCommands.name, () => {
       editReply: jest.fn().mockResolvedValue(undefined),
     };
 
-    commands = new SubscriptionCommands(
-      subscriptionService,
-      {} as never,
-      {
-        resolve: jest.fn().mockReturnValue(mockSource),
-        getAll: jest.fn().mockReturnValue([mockSource]),
-      } as never,
-    );
+    commands = new SubscriptionCommands(subscriptionService, {} as never);
   });
 
   afterEach(() => {
+    Source.clearRegistry();
     jest.restoreAllMocks();
   });
 
@@ -174,8 +171,14 @@ describe(SubscriptionCommands.name, () => {
   describe('onSubscriptions', () => {
     it('should reply with the subscriptions list', async () => {
       const subscriptions = [
-        subscriptionFactory({ source: SourceId.WarhammerCommunity, channelId }),
-        subscriptionFactory({ source: SourceId.CodexYGO, channelId }),
+        subscriptionFactory({
+          sourceId: SourceId.WarhammerCommunity,
+          channelId,
+        }),
+        subscriptionFactory({
+          sourceId: SourceId.WarhammerCommunity,
+          channelId,
+        }),
       ];
       subscriptionService.getChannelSubscriptions.mockResolvedValue(
         subscriptions,
@@ -192,10 +195,7 @@ describe(SubscriptionCommands.name, () => {
         flags: ['Ephemeral'],
       });
       expect(interaction.editReply).toHaveBeenCalledWith({
-        content: Constants.REPLIES.subscriptions(channelId, [
-          mockSource,
-          mockSource,
-        ]),
+        content: Constants.REPLIES.subscriptions(channelId, subscriptions),
       });
     });
 

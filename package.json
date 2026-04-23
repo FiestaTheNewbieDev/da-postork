@@ -4,8 +4,12 @@
   "version": "0.0.1",
   "private": true,
   "description": "",
-  "license": "UNLICENSED",
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FiestaTheNewbieDev/da-postork"
+  },
+  "license": "GPL-3.0",
+  "author": "Clément FOSSORIER",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -89,5 +93,8 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

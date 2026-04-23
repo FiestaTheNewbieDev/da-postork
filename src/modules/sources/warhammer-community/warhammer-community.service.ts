@@ -1,3 +1,4 @@
+import { SourceId } from '@entities/subscription.entity';
 import { WarhammerCommunityArticle } from '@entities/warhammer-community-article.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
@@ -6,10 +7,10 @@ import { SubscriptionService } from '@modules/subscription/subscription.service'
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { AbstractSourceService } from '@sources/core/abstract-source-service';
+import { Source } from '@sources/core/source';
 import { SourceJobData } from '@sources/sources.types';
 import { WarhammerCommunityApi } from '@sources/warhammer-community/warhammer-community.api';
 import * as Constants from '@sources/warhammer-community/warhammer-community.constants';
-import { WarhammerCommunitySource } from '@sources/warhammer-community/warhammer-community.source';
 import * as Types from '@sources/warhammer-community/warhammer-community.types';
 import { Queue } from 'bullmq';
 import { EmbedBuilder } from 'discord.js';
@@ -20,7 +21,6 @@ export class WarhammerCommunityService extends AbstractSourceService<
   Types.News
 > {
   constructor(
-    source: WarhammerCommunitySource,
     private readonly api: WarhammerCommunityApi,
     @InjectRepository(WarhammerCommunityArticle)
     private readonly articleRepo: EntityRepository<WarhammerCommunityArticle>,
@@ -29,7 +29,11 @@ export class WarhammerCommunityService extends AbstractSourceService<
     @InjectQueue(Constants.WARHAMMER_COMMUNITY_QUEUE)
     queue: Queue<SourceJobData>,
   ) {
-    super(source, orm, subscriptionService, queue);
+    super(orm, subscriptionService, queue);
+  }
+
+  protected get source(): Source {
+    return Source.resolve(SourceId.WarhammerCommunity);
   }
 
   protected async getUnsavedNews(): Promise<Types.News[]> {

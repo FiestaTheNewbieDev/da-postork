@@ -3,6 +3,7 @@ import {
   CodexYGOCategory,
   CodexYGOMember,
 } from '@entities/codexygo';
+import { SourceId } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
@@ -11,9 +12,9 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { CodexYGOApi } from '@sources/codexygo/codexygo.api';
 import * as Constants from '@sources/codexygo/codexygo.constants';
-import { CodexYGOSource } from '@sources/codexygo/codexygo.source';
 import * as Types from '@sources/codexygo/codexygo.types';
 import { AbstractSourceService } from '@sources/core/abstract-source-service';
+import { Source } from '@sources/core/source';
 import { SourceJobData } from '@sources/sources.types';
 import { Queue } from 'bullmq';
 import { EmbedBuilder } from 'discord.js';
@@ -24,7 +25,6 @@ export class CodexYGOService extends AbstractSourceService<
   Types.Article
 > {
   constructor(
-    source: CodexYGOSource,
     private readonly api: CodexYGOApi,
     @InjectRepository(CodexYGOArticle)
     private readonly articleRepo: EntityRepository<CodexYGOArticle>,
@@ -37,7 +37,11 @@ export class CodexYGOService extends AbstractSourceService<
     @InjectQueue(Constants.CODEXYGO_QUEUE)
     queue: Queue<SourceJobData>,
   ) {
-    super(source, orm, subscriptionService, queue);
+    super(orm, subscriptionService, queue);
+  }
+
+  protected get source(): Source {
+    return Source.resolve(SourceId.CodexYGO);
   }
 
   protected async getUnsavedNews(): Promise<Types.Article[]> {

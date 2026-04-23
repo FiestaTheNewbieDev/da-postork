@@ -1,6 +1,7 @@
 import { Messages } from '@/types';
+import { Subscription } from '@entities/subscription.entity';
 import { fmt as discordFmt } from '@modules/discord/discord.utils';
-import { Source } from '@sources/core/abstract-source';
+import { Source } from '@sources/core/source';
 import { fmt as loggerFmt } from '@utils/logger.utils';
 
 export const REPLIES = {
@@ -36,11 +37,11 @@ export const REPLIES = {
 
   subscriptions: (
     channelId: string,
-    subscribedSources: Source[],
+    subscriptions: Subscription[],
     isDM: boolean = false,
   ) =>
-    `${isDM ? 'You are subscribed to the following sources' : `${discordFmt.channel(channelId)} is subscribed to the following sources`}:\n${subscribedSources
-      .map((source: Source) => `- ${source.toDiscordString()}`)
+    `${isDM ? 'You are subscribed to the following sources' : `${discordFmt.channel(channelId)} is subscribed to the following sources`}:\n${subscriptions
+      .map((subscription) => `- ${subscription.source.toDiscordString()}`)
       .join('\n')}`,
   noSubscriptions: (channelId: string, isDM: boolean = false) =>
     isDM

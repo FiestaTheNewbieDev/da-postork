@@ -10,7 +10,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { Source } from '@sources/core/abstract-source';
+import { Source } from '@sources/core/source';
 
 @Injectable()
 export class SubscriptionService {
@@ -29,7 +29,7 @@ export class SubscriptionService {
     if (cached) return JSON.parse(cached) as string[];
 
     const subscriptions = await this.subscriptionRepo.find({
-      source: source.id,
+      sourceId: source.id,
     });
     const channelIds = subscriptions.map((s) => s.channelId);
 
@@ -53,7 +53,7 @@ export class SubscriptionService {
     channelId: string,
   ): Promise<Subscription> {
     const existing = await this.subscriptionRepo.findOne({
-      source: source.id,
+      sourceId: source.id,
       channelId,
     });
 
@@ -63,7 +63,7 @@ export class SubscriptionService {
       );
 
     const subscription = this.subscriptionRepo.create({
-      source: source.id,
+      sourceId: source.id,
       channelId,
     });
     const em = this.subscriptionRepo.getEntityManager();
@@ -77,7 +77,7 @@ export class SubscriptionService {
 
   public async unsubscribe(source: Source, channelId: string): Promise<void> {
     const subscription = await this.subscriptionRepo.findOne({
-      source: source.id,
+      sourceId: source.id,
       channelId,
     });
 

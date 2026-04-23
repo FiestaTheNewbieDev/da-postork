@@ -3,8 +3,8 @@ import { SourceId } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger } from '@nestjs/common';
-import { Source } from '@sources/core/abstract-source';
 import { AbstractSourceService } from '@sources/core/abstract-source-service';
+import { Source } from '@sources/core/source';
 import * as Constants from '@sources/sources.constants';
 import { SourceJobData } from '@sources/sources.types';
 import { Queue } from 'bullmq';
@@ -21,25 +21,35 @@ jest.mock('@mikro-orm/core', () => ({
 class TestArticle extends AbstractArticle {}
 
 class TestSourceService extends AbstractSourceService<TestArticle> {
+  protected readonly source: Source;
   getUnsavedNews = jest.fn<Promise<unknown[]>, []>();
   saveNews = jest.fn<Promise<TestArticle[]>, [unknown[]]>();
   getArticlesByIds = jest.fn<Promise<TestArticle[]>, [number[]]>();
   buildEmbed = jest.fn<EmbedBuilder, [TestArticle]>();
+
+  constructor(
+    source: Source,
+    orm: MikroORM,
+    subscriptionService: SubscriptionService,
+    queue: Queue<SourceJobData>,
+  ) {
+    super(orm, subscriptionService, queue);
+    this.source = source;
+  }
 }
 
 describe(AbstractSourceService.name, () => {
+  const TEST_SOURCE_ID = 'TEST' as SourceId;
   let service: TestSourceService;
   let mockSource: Source;
   let subscriptionService: { getSubscribedChannels: jest.Mock };
   let queue: { addBulk: jest.Mock };
 
   beforeEach(() => {
-    mockSource = {
-      id: 'TEST' as SourceId,
+    Source.clearRegistry();
+    mockSource = new Source(TEST_SOURCE_ID, {
       label: 'Test',
-      description: null,
-      url: null,
-    } as Source;
+    });
     subscriptionService = { getSubscribedChannels: jest.fn() };
     queue = { addBulk: jest.fn().mockResolvedValue(undefined) };
 
