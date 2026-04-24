@@ -321,7 +321,13 @@ describe(CodexYGOService.name, () => {
       expect(embed.image?.url).toBe(
         CodexYGOService.buildAssetUrl(article.thumbnailId!),
       );
-      expect(embed.url).toBe(CodexYGOService.buildArticleUrl(article));
+      expect(embed.url).toBe(
+        (
+          service as unknown as {
+            buildArticleUrl: (a: CodexYGOArticle) => string;
+          }
+        ).buildArticleUrl(article),
+      );
     });
 
     it('should set image to null when thumbnailId is absent', () => {
@@ -348,7 +354,11 @@ describe(CodexYGOService.name, () => {
         codexygoOid: 99,
       });
 
-      const url = CodexYGOService.buildArticleUrl(article);
+      const url = (
+        service as unknown as {
+          buildArticleUrl: (a: CodexYGOArticle) => string;
+        }
+      ).buildArticleUrl(article);
 
       expect(url).toBe(
         `${Constants.CODEXYGO_WEBSITE_BASE_URL}article/my-article-99/`,

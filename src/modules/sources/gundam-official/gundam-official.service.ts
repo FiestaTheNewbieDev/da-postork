@@ -1,4 +1,3 @@
-import { AbstractArticle } from '@entities/abstract-article.entity';
 import { GundamOfficialArticle } from '@entities/gundam-official-article.entity';
 import { SourceId } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
@@ -15,27 +14,26 @@ import * as Constants from '@sources/gundam-official/gundam-official.constants';
 import * as Types from '@sources/gundam-official/gundam-official.types';
 import { SourceJobData } from '@sources/sources.types';
 import { Queue } from 'bullmq';
-import { EmbedBuilder } from 'discord.js';
 
 @Injectable()
 export class GundamOfficialService extends AbstractSourceService<
-  AbstractArticle,
-  unknown
+  GundamOfficialArticle,
+  Types.News
 > {
   constructor(
     private readonly api: GundamOfficialApi,
     @InjectRepository(GundamOfficialArticle)
-    private readonly articleRepo: EntityRepository<GundamOfficialArticle>,
+    articleRepo: EntityRepository<GundamOfficialArticle>,
     orm: MikroORM,
     subscriptionService: SubscriptionService,
     @InjectQueue(Constants.GUNDAM_OFFICIAL_QUEUE)
     queue: Queue<SourceJobData>,
     schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue, schedulerRegistry);
+    super(orm, articleRepo, subscriptionService, queue, schedulerRegistry);
   }
 
-  protected get schedules() {
+  protected override get schedules() {
     return [
       { expression: '0 22-23 * * *', timezone: 'Asia/Tokyo' },
       { expression: '0 0-7 * * *', timezone: 'Asia/Tokyo' },
@@ -77,25 +75,16 @@ export class GundamOfficialService extends AbstractSourceService<
     return articles;
   }
 
-  public getArticlesByIds(ids: number[]): Promise<GundamOfficialArticle[]> {
-    return this.articleRepo.find(
-      { id: { $in: ids } },
-      { orderBy: { publishedAt: 'asc' } },
-    );
-  }
-
-  public buildEmbed(article: GundamOfficialArticle): EmbedBuilder {
-    return new EmbedBuilder()
-      .setTitle(article.title)
-      .setImage(article.thumbnailUrl)
-      .setURL(GundamOfficialService.buildArticleUrl(article))
-      .addFields({ name: '​', value: article.publishedAt.toDateString() });
-  }
-
-  public static buildArticleUrl(article: GundamOfficialArticle): string {
+  protected buildArticleUrl(article: GundamOfficialArticle): string {
     return new URL(
       `news/${article.gundamOfficialDocumentId}`,
       Constants.GUNDAM_OFFICIAL_WEBSITE_BASE_URL,
     ).toString();
+  }
+
+  protected override buildThumbnailUrl(
+    article: GundamOfficialArticle,
+  ): Nullable<string> {
+    return article.thumbnailUrl;
   }
 }

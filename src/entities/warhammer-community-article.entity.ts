@@ -35,9 +35,6 @@ export class WarhammerCommunityArticle extends AbstractArticle {
   })
   readonly warhammerCommunitySlug!: string;
 
-  @Property({ name: 'title', columnType: 'varchar(255)', nullable: false })
-  title!: string;
-
   @Property({ name: 'excerpt', columnType: 'varchar(512)', nullable: true })
   excerpt?: string;
 
