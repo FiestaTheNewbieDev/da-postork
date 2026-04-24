@@ -15,7 +15,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/package*.json ./
 COPY tsconfig*.json ./
 COPY mikro-orm.config.ts ./
-COPY src/entities ./src/entities
+COPY src ./src
 COPY migrations ./migrations
 
 RUN addgroup -S da-postork && adduser -S da-postork -G da-postork
