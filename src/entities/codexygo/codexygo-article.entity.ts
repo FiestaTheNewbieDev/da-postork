@@ -36,9 +36,6 @@ export class CodexYGOArticle extends AbstractArticle {
   })
   readonly codexygoSlug!: string;
 
-  @Property({ name: 'title', columnType: 'varchar(255)', nullable: false })
-  title!: string;
-
   @Property({ name: 'teaser', columnType: 'varchar(512)', nullable: true })
   teaser?: string;
 

@@ -1,6 +1,7 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
 import { SourceId } from '@entities/subscription.entity';
 import { MikroORM } from '@mikro-orm/core';
+import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -19,6 +20,12 @@ jest.mock('@mikro-orm/core', () => ({
       descriptor,
 }));
 
+jest.mock('cron', () => ({
+  CronJob: {
+    from: jest.fn().mockReturnValue({ start: jest.fn() }),
+  },
+}));
+
 class TestArticle extends AbstractArticle {}
 
 class TestSourceService extends AbstractSourceService<TestArticle> {
@@ -27,6 +34,7 @@ class TestSourceService extends AbstractSourceService<TestArticle> {
   saveNews = jest.fn<Promise<TestArticle[]>, [unknown[]]>();
   getArticlesByIds = jest.fn<Promise<TestArticle[]>, [number[]]>();
   buildEmbed = jest.fn<EmbedBuilder, [TestArticle]>();
+  buildArticleUrl = jest.fn<string, [TestArticle]>();
 
   constructor(
     source: Source,
@@ -35,7 +43,13 @@ class TestSourceService extends AbstractSourceService<TestArticle> {
     queue: Queue<SourceJobData>,
     schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue, schedulerRegistry);
+    super(
+      orm,
+      {} as unknown as EntityRepository<TestArticle>,
+      subscriptionService,
+      queue,
+      schedulerRegistry,
+    );
     this.source = source;
   }
 }

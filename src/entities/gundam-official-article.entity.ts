@@ -25,9 +25,6 @@ export class GundamOfficialArticle extends AbstractArticle {
   })
   readonly gundamOfficialSlug?: string;
 
-  @Property({ name: 'title', columnType: 'varchar(255)', nullable: false })
-  title!: string;
-
   @Property({
     name: 'thumbnail_url',
     columnType: 'varchar(255)',

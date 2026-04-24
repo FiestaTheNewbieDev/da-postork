@@ -1,5 +1,6 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
 import { CreateRequestContext, MikroORM } from '@mikro-orm/core';
+import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { Logger, OnModuleInit } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
@@ -15,8 +16,12 @@ import { EmbedBuilder, GuildEmoji } from 'discord.js';
  *
  * Handles the full fetch→save→enqueue pipeline on a configurable set of cron
  * schedules. Each concrete source must implement the data-fetching and
- * persistence logic via {@link getUnsavedNews} and {@link saveNews}, as well as
- * Discord presentation via {@link buildEmbed} and {@link getArticlesByIds}.
+ * persistence logic via {@link getUnsavedNews} and {@link saveNews}.
+ *
+ * Discord embed construction is handled by {@link buildEmbed}, which composes
+ * three overridable hooks: {@link buildDescription}, {@link buildThumbnailUrl},
+ * and {@link buildArticleUrl} (abstract). Override {@link buildEmbed} directly
+ * for deeper customisation (e.g. adding author or footer fields).
  *
  * @template TArticle - The MikroORM entity type for this source's articles.
  * @template TNews - The raw API response type before persistence.
@@ -30,6 +35,7 @@ export abstract class AbstractSourceService<
 
   constructor(
     protected readonly orm: MikroORM,
+    protected readonly articleRepo: EntityRepository<TArticle>,
     protected readonly subscriptionService: SubscriptionService,
     protected readonly queue: Queue<Types.SourceJobData>,
     protected readonly schedulerRegistry: SchedulerRegistry,
@@ -53,7 +59,7 @@ export abstract class AbstractSourceService<
   }
 
   /** Returns the cron schedules to register. Override to customize. */
-  protected get schedules(): CronSchedule[] {
+  protected get schedules(): Types.CronSchedule[] {
     return [{ expression: '0 * * * *', timezone: 'UTC' }];
   }
 
@@ -98,9 +104,10 @@ export abstract class AbstractSourceService<
   }
 
   /**
-   * Returns the default emoji reactions added to each posted article.
+   * Returns the emoji reactions added to each posted article.
    *
-   * Override to customize reactions for a specific source.
+   * Override to customize reactions for a specific source. Defaults to 👍 / 😐
+   * / 👎.
    */
   public getReactions(): (string | GuildEmoji)[] {
     return ['👍', '😐', '👎'];
@@ -127,21 +134,64 @@ export abstract class AbstractSourceService<
   /**
    * Retrieves persisted articles by their IDs.
    *
+   * Override to add relations (e.g. `populate`) or change ordering.
+   *
    * @param ids - Article IDs to fetch.
    * @returns The matching article entities.
    */
-  public abstract getArticlesByIds(ids: number[]): Promise<TArticle[]>;
+  public getArticlesByIds(ids: number[]): Promise<TArticle[]> {
+    return this.articleRepo.find(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
+      { id: { $in: ids } } as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+      { orderBy: { publishedAt: 'asc' } as any },
+    );
+  }
 
   /**
    * Builds a Discord embed for a single article.
    *
+   * Calls {@link buildDescription}, {@link buildThumbnailUrl}, and
+   * {@link buildArticleUrl} to populate the embed fields. Override this method
+   * to add extra fields (e.g. author, footer) on top of the base embed, or to
+   * replace the structure entirely.
+   *
    * @param article - The article to format.
    * @returns A Discord.js {@link EmbedBuilder} ready to be sent.
    */
-  public abstract buildEmbed(article: TArticle): EmbedBuilder;
-}
+  public buildEmbed(article: TArticle): EmbedBuilder {
+    return new EmbedBuilder()
+      .setTitle(article.title)
+      .setDescription(this.buildDescription(article))
+      .setImage(this.buildThumbnailUrl(article))
+      .setURL(this.buildArticleUrl(article))
+      .addFields({
+        name: '\u200B',
+        value: article.publishedAt.toDateString(),
+      });
+  }
 
-type CronSchedule = {
-  expression: string;
-  timezone: string;
-};
+  /**
+   * Returns the embed description for an article. Override to populate it —
+   * returns `null` by default (no description).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected buildDescription(article: TArticle): Nullable<string> {
+    return null;
+  }
+
+  /**
+   * Returns the canonical URL of the article on the source website. Used as the
+   * embed link.
+   */
+  protected abstract buildArticleUrl(article: TArticle): string;
+
+  /**
+   * Returns the URL of the thumbnail image for the embed. Override to populate
+   * it — returns `null` by default (no thumbnail).
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected buildThumbnailUrl(article: TArticle): Nullable<string> {
+    return null;
+  }
+}

@@ -4,6 +4,9 @@ export abstract class AbstractArticle {
   @PrimaryKey({ name: 'id', type: 'integer', autoincrement: true })
   readonly id!: Opt<number>;
 
+  @Property({ name: 'title', columnType: 'varchar(255)', nullable: false })
+  title!: string;
+
   @Property({
     name: 'published_at',
     type: 'timestamp with time zone',

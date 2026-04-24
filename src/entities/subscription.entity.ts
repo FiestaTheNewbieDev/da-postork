@@ -5,6 +5,7 @@ export enum SourceId {
   WarhammerCommunity = 'WARHAMMER_COMMUNITY',
   CodexYGO = 'CODEXYGO',
   GundamOfficial = 'GUNDAM_OFFICIAL',
+  Marvel = 'MARVEL',
 }
 
 @Entity({
