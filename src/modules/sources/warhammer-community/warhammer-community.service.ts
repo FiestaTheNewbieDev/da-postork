@@ -14,7 +14,6 @@ import { WarhammerCommunityApi } from '@sources/warhammer-community/warhammer-co
 import * as Constants from '@sources/warhammer-community/warhammer-community.constants';
 import * as Types from '@sources/warhammer-community/warhammer-community.types';
 import { Queue } from 'bullmq';
-import { EmbedBuilder } from 'discord.js';
 
 @Injectable()
 export class WarhammerCommunityService extends AbstractSourceService<
@@ -24,17 +23,17 @@ export class WarhammerCommunityService extends AbstractSourceService<
   constructor(
     private readonly api: WarhammerCommunityApi,
     @InjectRepository(WarhammerCommunityArticle)
-    private readonly articleRepo: EntityRepository<WarhammerCommunityArticle>,
+    articleRepo: EntityRepository<WarhammerCommunityArticle>,
     orm: MikroORM,
     subscriptionService: SubscriptionService,
     @InjectQueue(Constants.WARHAMMER_COMMUNITY_QUEUE)
     queue: Queue<SourceJobData>,
     schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue, schedulerRegistry);
+    super(orm, articleRepo, subscriptionService, queue, schedulerRegistry);
   }
 
-  protected get schedules() {
+  protected override get schedules() {
     return [
       { expression: '0 22-23 * * *', timezone: 'Europe/London' },
       { expression: '0 0-7 * * *', timezone: 'Europe/London' },
@@ -86,17 +85,25 @@ export class WarhammerCommunityService extends AbstractSourceService<
     return articles;
   }
 
-  public getArticlesByIds(ids: number[]): Promise<WarhammerCommunityArticle[]> {
-    return this.articleRepo.find(
-      { id: { $in: ids } },
-      { orderBy: { publishedAt: 'asc' } },
-    );
+  protected override buildDescription(
+    article: WarhammerCommunityArticle,
+  ): Nullable<string> {
+    return article.excerpt || null;
   }
 
-  public static buildArticleUrl(article: WarhammerCommunityArticle): string {
-    const url = new URL(Constants.WARHAMMER_COMMUNITY_WEBSITE_BASE_URL);
-    url.pathname = `/${article.locale}/articles/${article.warhammerCommunityUuid}/${article.warhammerCommunitySlug}/`;
-    return url.toString();
+  protected buildArticleUrl(article: WarhammerCommunityArticle): string {
+    return new URL(
+      `/${article.locale}/articles/${article.warhammerCommunityUuid}/${article.warhammerCommunitySlug}/`,
+      Constants.WARHAMMER_COMMUNITY_WEBSITE_BASE_URL,
+    ).toString();
+  }
+
+  protected override buildThumbnailUrl(
+    article: WarhammerCommunityArticle,
+  ): Nullable<string> {
+    return article.thumbnailPath
+      ? WarhammerCommunityService.buildAssetUrl(article.thumbnailPath)
+      : null;
   }
 
   public static buildAssetUrl(assetPath: string): string {
@@ -104,18 +111,5 @@ export class WarhammerCommunityService extends AbstractSourceService<
       assetPath,
       'https://assets.warhammer-community.com',
     ).toString();
-  }
-
-  public buildEmbed(article: WarhammerCommunityArticle): EmbedBuilder {
-    return new EmbedBuilder()
-      .setTitle(article.title)
-      .setDescription(article.excerpt || null)
-      .setImage(
-        article.thumbnailPath
-          ? WarhammerCommunityService.buildAssetUrl(article.thumbnailPath)
-          : null,
-      )
-      .setURL(WarhammerCommunityService.buildArticleUrl(article))
-      .addFields({ name: '\u200B', value: article.publishedAt.toDateString() });
   }
 }

@@ -28,7 +28,7 @@ export class CodexYGOService extends AbstractSourceService<
   constructor(
     private readonly api: CodexYGOApi,
     @InjectRepository(CodexYGOArticle)
-    private readonly articleRepo: EntityRepository<CodexYGOArticle>,
+    articleRepo: EntityRepository<CodexYGOArticle>,
     @InjectRepository(CodexYGOCategory)
     private readonly categoryRepo: EntityRepository<CodexYGOCategory>,
     @InjectRepository(CodexYGOMember)
@@ -39,10 +39,10 @@ export class CodexYGOService extends AbstractSourceService<
     queue: Queue<SourceJobData>,
     schedulerRegistry: SchedulerRegistry,
   ) {
-    super(orm, subscriptionService, queue, schedulerRegistry);
+    super(orm, articleRepo, subscriptionService, queue, schedulerRegistry);
   }
 
-  protected get schedules() {
+  protected override get schedules() {
     return [
       { expression: '0 22-23 * * *', timezone: 'Europe/Paris' },
       { expression: '0 0-7 * * *', timezone: 'Europe/Paris' },
@@ -134,36 +134,41 @@ export class CodexYGOService extends AbstractSourceService<
     return articles;
   }
 
-  public getArticlesByIds(ids: number[]): Promise<CodexYGOArticle[]> {
+  public override getArticlesByIds(ids: number[]): Promise<CodexYGOArticle[]> {
     return this.articleRepo.find(
       { id: { $in: ids } },
       { populate: ['creator', 'categories'], orderBy: { publishedAt: 'asc' } },
     );
   }
 
-  public static buildArticleUrl(article: CodexYGOArticle): string {
-    const url = new URL(Constants.CODEXYGO_WEBSITE_BASE_URL);
-    url.pathname = `/article/${article.codexygoSlug}-${article.codexygoOid}/`;
-    return url.toString();
+  public override buildEmbed(article: CodexYGOArticle): EmbedBuilder {
+    return super.buildEmbed(article).setAuthor({
+      name: article.creator.username,
+    });
+  }
+
+  protected override buildDescription(
+    article: CodexYGOArticle,
+  ): Nullable<string> {
+    return article.teaser || null;
+  }
+
+  protected buildArticleUrl(article: CodexYGOArticle): string {
+    return new URL(
+      `/article/${article.codexygoSlug}-${article.codexygoOid}/`,
+      Constants.CODEXYGO_WEBSITE_BASE_URL,
+    ).toString();
+  }
+
+  protected override buildThumbnailUrl(
+    article: CodexYGOArticle,
+  ): Nullable<string> {
+    return article.thumbnailId
+      ? CodexYGOService.buildAssetUrl(article.thumbnailId)
+      : null;
   }
 
   public static buildAssetUrl(assetId: number): string {
     return `${Constants.CODEXYGO_WEBSITE_BASE_URL}/api/file/download/1/${assetId}/?derivative=webp`;
-  }
-
-  public buildEmbed(article: CodexYGOArticle): EmbedBuilder {
-    return new EmbedBuilder()
-      .setTitle(article.title)
-      .setDescription(article.teaser || null)
-      .setAuthor({
-        name: article.creator.username,
-      })
-      .setImage(
-        article.thumbnailId
-          ? CodexYGOService.buildAssetUrl(article.thumbnailId)
-          : null,
-      )
-      .setURL(CodexYGOService.buildArticleUrl(article))
-      .addFields({ name: '\u200B', value: article.publishedAt.toDateString() });
   }
 }

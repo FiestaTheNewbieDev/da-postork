@@ -230,10 +230,28 @@
         }
       },
       "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
         }
       },
       "comment": null
@@ -323,10 +341,28 @@
         }
       },
       "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
         }
       },
       "comment": null
@@ -469,10 +505,28 @@
       "checks": [],
       "foreignKeys": {},
       "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
         }
       },
       "comment": null
@@ -599,10 +653,28 @@
       "checks": [],
       "foreignKeys": {},
       "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
         }
       },
       "comment": null
@@ -777,10 +849,249 @@
       "checks": [],
       "foreignKeys": {},
       "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
+        }
+      },
+      "comment": null
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int4",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": 32,
+          "scale": 0,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "integer"
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": "now()",
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "marvel_link": {
+          "name": "marvel_link",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(1024)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 1024,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "category": {
+          "name": "category",
+          "type": "marvel_article_category",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ],
+          "mappedType": "unknown",
+          "nativeEnumName": "marvel_article_category"
+        },
+        "thumbnail_filename": {
+          "name": "thumbnail_filename",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "string"
+        }
+      },
+      "name": "marvel_article",
+      "schema": "public",
+      "indexes": [
+        {
+          "columnNames": ["marvel_link"],
+          "composite": false,
+          "constraint": true,
+          "keyName": "marvel_article_marvel_link_unique",
+          "unique": true,
+          "primary": false
+        },
+        {
+          "columnNames": ["id"],
+          "composite": false,
+          "constraint": false,
+          "keyName": "marvel_article_pkey",
+          "unique": true,
+          "primary": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
+        "subscription_source": {
+          "name": "subscription_source",
+          "schema": "public",
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
         }
       },
       "comment": null
@@ -800,7 +1111,12 @@
           "scale": null,
           "default": null,
           "comment": null,
-          "enumItems": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"],
+          "enumItems": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ],
           "mappedType": "unknown",
           "nativeEnumName": "subscription_source"
         },
@@ -852,10 +1168,28 @@
       "checks": [],
       "foreignKeys": {},
       "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
         }
       },
       "comment": null
@@ -1078,20 +1412,51 @@
       "checks": [],
       "foreignKeys": {},
       "nativeEnums": {
+        "marvel_article_category": {
+          "name": "marvel_article_category",
+          "schema": "public",
+          "items": [
+            "MOVIES",
+            "COMICS",
+            "TV_SHOWS",
+            "GAMES",
+            "DIGITAL_SERIES",
+            "CULTURE_AND_LIFESTYLE",
+            "PODCAST"
+          ]
+        },
         "subscription_source": {
           "name": "subscription_source",
           "schema": "public",
-          "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+          "items": [
+            "WARHAMMER_COMMUNITY",
+            "CODEXYGO",
+            "GUNDAM_OFFICIAL",
+            "MARVEL"
+          ]
         }
       },
       "comment": null
     }
   ],
   "nativeEnums": {
+    "marvel_article_category": {
+      "name": "marvel_article_category",
+      "schema": "public",
+      "items": [
+        "MOVIES",
+        "COMICS",
+        "TV_SHOWS",
+        "GAMES",
+        "DIGITAL_SERIES",
+        "CULTURE_AND_LIFESTYLE",
+        "PODCAST"
+      ]
+    },
     "subscription_source": {
       "name": "subscription_source",
       "schema": "public",
-      "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL"]
+      "items": ["WARHAMMER_COMMUNITY", "CODEXYGO", "GUNDAM_OFFICIAL", "MARVEL"]
     }
   }
 }
