@@ -1,16 +1,17 @@
 import { AbstractArticle } from '@entities/abstract-article.entity';
 import { GundamOfficialArticle } from '@entities/gundam-official-article.entity';
+import { SourceId } from '@entities/subscription.entity';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ConfigService } from '@modules/config/config.service';
 import { SubscriptionModule } from '@modules/subscription/subscription.module';
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bullmq';
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { createSourceConsumer } from '@sources/core/abstract-source-consumer';
+import { Source } from '@sources/core/source';
 import { GundamOfficialApi } from '@sources/gundam-official/gundam-official.api';
 import * as Constants from '@sources/gundam-official/gundam-official.constants';
 import { GundamOfficialService } from '@sources/gundam-official/gundam-official.service';
-import { GundamOfficialSource } from '@sources/gundam-official/gundam-official.source';
 
 const GundamOfficialConsumer = createSourceConsumer<AbstractArticle>(
   Constants.GUNDAM_OFFICIAL_QUEUE,
@@ -39,12 +40,17 @@ const GundamOfficialConsumer = createSourceConsumer<AbstractArticle>(
       },
     }),
   ],
-  providers: [
-    GundamOfficialSource,
-    GundamOfficialConsumer,
-    GundamOfficialService,
-    GundamOfficialApi,
-  ],
-  exports: [GundamOfficialSource, GundamOfficialService],
+  providers: [GundamOfficialConsumer, GundamOfficialService, GundamOfficialApi],
+  exports: [GundamOfficialService],
 })
-export class GundamOfficialModule {}
+export class GundamOfficialModule implements OnModuleInit {
+  onModuleInit() {
+    Source.register(
+      new Source(SourceId.GundamOfficial, {
+        label: Constants.GUNDAM_OFFICIAL_LABEL,
+        description: Constants.GUNDAM_OFFICIAL_DESCRIPTION,
+        url: Constants.GUNDAM_OFFICIAL_WEBSITE_BASE_URL,
+      }),
+    );
+  }
+}

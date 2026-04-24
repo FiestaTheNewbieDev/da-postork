@@ -1,5 +1,5 @@
 import { Messages } from '@/types';
-import { Source } from '@sources/core/abstract-source';
+import { Source } from '@sources/core/source';
 
 export const MESSAGES = {
   ready: () => 'Redis Client Connected',

@@ -1,4 +1,5 @@
 import { Entity, Enum, Opt, PrimaryKey, Property } from '@mikro-orm/core';
+import { Source } from '@sources/core/source';
 
 export enum SourceId {
   WarhammerCommunity = 'WARHAMMER_COMMUNITY',
@@ -16,7 +17,7 @@ export class Subscription {
     primary: true,
     name: 'source',
   })
-  readonly source!: SourceId;
+  readonly sourceId!: SourceId;
 
   @PrimaryKey({ name: 'channel_id', type: 'varchar(32)' })
   readonly channelId!: string;
@@ -28,4 +29,9 @@ export class Subscription {
     defaultRaw: 'now()',
   })
   readonly createdAt: Opt<Date> = new Date();
+
+  @Property({ persist: false })
+  public get source(): Opt<Source> {
+    return Source.resolve(this.sourceId);
+  }
 }
