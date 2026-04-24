@@ -10,7 +10,7 @@ import {
   NotFoundException,
   UseInterceptors,
 } from '@nestjs/common';
-import { SourcesService } from '@sources/sources.service';
+import { Source } from '@sources/core/source';
 import { ChatInputCommandInteraction } from 'discord.js';
 import { Context, Options, SlashCommand, StringOption } from 'necord';
 
@@ -31,7 +31,6 @@ export class SubscriptionCommands {
   constructor(
     private readonly subscriptionService: SubscriptionService,
     protected readonly orm: MikroORM,
-    private readonly sourcesService: SourcesService,
   ) {}
 
   @UseInterceptors(SourceAutocompleteInterceptor)
@@ -53,7 +52,7 @@ export class SubscriptionCommands {
   ) {
     await interaction.deferReply({ flags: ['Ephemeral'] });
     const isDM = !interaction.inGuild();
-    const source = this.sourcesService.resolve(sourceId);
+    const source = Source.resolve(sourceId);
     try {
       await this.subscriptionService.subscribe(source, interaction.channelId);
       await interaction.editReply({
@@ -110,7 +109,7 @@ export class SubscriptionCommands {
   ) {
     await interaction.deferReply({ flags: ['Ephemeral'] });
     const isDM = !interaction.inGuild();
-    const source = this.sourcesService.resolve(sourceId);
+    const source = Source.resolve(sourceId);
     try {
       await this.subscriptionService.unsubscribe(source, interaction.channelId);
       await interaction.editReply({
@@ -178,14 +177,10 @@ export class SubscriptionCommands {
         return;
       }
 
-      const sources = subscriptions.map((s) =>
-        this.sourcesService.resolve(s.source),
-      );
-
       await interaction.editReply({
         content: Constants.REPLIES.subscriptions(
           interaction.channelId,
-          sources,
+          subscriptions,
           isDM,
         ),
       });

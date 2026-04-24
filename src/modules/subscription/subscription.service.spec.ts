@@ -3,7 +3,7 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 import { RedisService } from '@modules/redis/redis.service';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { Source } from '@sources/core/abstract-source';
+import { Source } from '@sources/core/source';
 
 describe(SubscriptionService.name, () => {
   let service: SubscriptionService;
@@ -56,7 +56,7 @@ describe(SubscriptionService.name, () => {
       const result = await service.getSubscribedChannels(source);
 
       expect(subscriptionRepo.find).toHaveBeenCalledWith({
-        source: source.id,
+        sourceId: source.id,
       });
       expect(result).toEqual(['111', '222']);
     });
@@ -76,7 +76,7 @@ describe(SubscriptionService.name, () => {
     it('should return the subscriptions for the given channel', async () => {
       const channelId = '111';
       const subscriptions = [
-        { source: SourceId.WarhammerCommunity, channelId },
+        { sourceId: SourceId.WarhammerCommunity, channelId },
       ] as Subscription[];
       subscriptionRepo.find.mockResolvedValue(subscriptions);
 
@@ -100,18 +100,18 @@ describe(SubscriptionService.name, () => {
     const channelId = '111';
 
     it('should create and return a new subscription', async () => {
-      const subscription = { source: source.id, channelId } as Subscription;
+      const subscription = { sourceId: source.id, channelId } as Subscription;
       subscriptionRepo.findOne.mockResolvedValue(null);
       subscriptionRepo.create.mockReturnValue(subscription);
 
       const result = await service.subscribe(source, channelId);
 
       expect(subscriptionRepo.findOne).toHaveBeenCalledWith({
-        source: source.id,
+        sourceId: source.id,
         channelId,
       });
       expect(subscriptionRepo.create).toHaveBeenCalledWith({
-        source: source.id,
+        sourceId: source.id,
         channelId,
       });
       expect(em.persist).toHaveBeenCalledWith(subscription);
@@ -121,7 +121,7 @@ describe(SubscriptionService.name, () => {
 
     it('should throw ConflictException when already subscribed', async () => {
       subscriptionRepo.findOne.mockResolvedValue({
-        source: source.id,
+        sourceId: source.id,
         channelId,
       } as Subscription);
 
@@ -136,13 +136,13 @@ describe(SubscriptionService.name, () => {
     const channelId = '111';
 
     it('should remove the subscription', async () => {
-      const subscription = { source: source.id, channelId } as Subscription;
+      const subscription = { sourceId: source.id, channelId } as Subscription;
       subscriptionRepo.findOne.mockResolvedValue(subscription);
 
       await service.unsubscribe(source, channelId);
 
       expect(subscriptionRepo.findOne).toHaveBeenCalledWith({
-        source: source.id,
+        sourceId: source.id,
         channelId,
       });
       expect(em.remove).toHaveBeenCalledWith(subscription);

@@ -10,10 +10,12 @@ import { codexygoMemberFactory } from '@factories/codexygo-member.factory';
 import { MikroORM } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { SubscriptionService } from '@modules/subscription/subscription.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { CodexYGOApi } from '@sources/codexygo/codexygo.api';
 import * as Constants from '@sources/codexygo/codexygo.constants';
 import { CodexYGOService } from '@sources/codexygo/codexygo.service';
 import * as Types from '@sources/codexygo/codexygo.types';
+import { Source } from '@sources/core/source';
 import { SourceJobData } from '@sources/sources.types';
 import { Queue } from 'bullmq';
 
@@ -99,6 +101,8 @@ describe(CodexYGOService.name, () => {
   });
 
   beforeEach(() => {
+    Source.register(new Source(SourceId.CodexYGO, { label: 'CodexYGO' }));
+
     em = { flush: jest.fn().mockResolvedValue(undefined) };
     orm = { em: { flush: jest.fn().mockResolvedValue(undefined) } };
     articleRepo = {
@@ -111,12 +115,6 @@ describe(CodexYGOService.name, () => {
     api = { getNews: jest.fn() };
 
     service = new CodexYGOService(
-      {
-        id: SourceId.CodexYGO,
-        label: 'CodexYGO',
-        description: null,
-        url: null,
-      } as never,
       api as unknown as CodexYGOApi,
       articleRepo as unknown as EntityRepository<CodexYGOArticle>,
       categoryRepo as unknown as EntityRepository<CodexYGOCategory>,
@@ -124,7 +122,12 @@ describe(CodexYGOService.name, () => {
       orm as unknown as MikroORM,
       {} as SubscriptionService,
       {} as Queue<SourceJobData>,
+      { addCronJob: jest.fn() } as unknown as SchedulerRegistry,
     );
+  });
+
+  afterEach(() => {
+    Source.clearRegistry();
   });
 
   describe('getUnsavedNews', () => {
