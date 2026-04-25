@@ -1,3 +1,7 @@
+<p align="center">
+    <img src="docs/assets/images/logo.jpeg" style="border-radius: 50%; width: 180px; overflow: hidden" />
+</p>
+
 <h1 align="center">Da Postork</h1>
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-grey?style=flat-square&logo=typescript)
