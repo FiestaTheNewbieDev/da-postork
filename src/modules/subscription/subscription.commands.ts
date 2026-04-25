@@ -11,7 +11,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Source } from '@sources/core/source';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { ChatInputCommandInteraction, PermissionFlagsBits } from 'discord.js';
 import { Context, Options, SlashCommand, StringOption } from 'necord';
 
 class SourceDto {
@@ -37,6 +37,7 @@ export class SubscriptionCommands {
   @SlashCommand({
     name: 'subscribe',
     description: 'Subscribe this channel to a source',
+    defaultMemberPermissions: PermissionFlagsBits.ManageChannels,
   })
   async onSubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
@@ -94,6 +95,7 @@ export class SubscriptionCommands {
   @SlashCommand({
     name: 'unsubscribe',
     description: 'Unsubscribe this channel from a source',
+    defaultMemberPermissions: PermissionFlagsBits.ManageChannels,
   })
   async onUnsubscribe(
     @Context() [interaction]: [ChatInputCommandInteraction],
