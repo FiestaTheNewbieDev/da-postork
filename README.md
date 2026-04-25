@@ -14,9 +14,9 @@ Stay updated on your favorite news directly in Discord!
 
 ### Add the bot to your Discord server
 
-Start by inviting **Da Postork** to your server:
+Start by inviting **Da Postork** to your server
 
-👉 <BOT_INSTALLATION_LINK>
+👉 [INSTALLATION LINK](https://discord.com/oauth2/authorize?client_id=1161725703931297886)
 
 > Make sure you grant the [required permissions](#bot-required-permissions) to the bot
 
