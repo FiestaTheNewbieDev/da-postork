@@ -141,8 +141,6 @@ export class MarvelService extends AbstractSourceService<
   }
 
   public static buildImageUrl(fileName: string): string {
-    const url = new URL(fileName, Constants.MARVEL_CDN_BASE_URL).toString();
-    console.log(`Built image URL: ${url}`);
-    return url;
+    return new URL(fileName, Constants.MARVEL_CDN_BASE_URL).toString();
   }
 }
