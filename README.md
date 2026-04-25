@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="docs/assets/images/logo.jpeg" style="border-radius: 50%; width: 180px; overflow: hidden" />
+    <img src="docs/assets/images/logo_rounded.png" style="width: 180px" />
 </p>
 
 <h1 align="center">Da Postork</h1>
