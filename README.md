@@ -29,7 +29,7 @@ Start by inviting **Da Postork** to your server
 Once the bot is added, you can start using it immediately:
 
 ```bash
-/subscribe <source>
+/subscribe
 ```
 
 Select a source, and you're done.
