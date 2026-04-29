@@ -18,9 +18,9 @@ Stay updated on your favorite news directly in Discord!
 
 ### Add the bot to your Discord server
 
-Start by inviting **Da Postork** to your server
+Start by adding **Da Postork** to your server
 
-👉 [INSTALLATION LINK](https://discord.com/oauth2/authorize?client_id=1161725703931297886)
+👉 <a href="https://discord.com/oauth2/authorize?client_id=1161725703931297886" target="_blank">INSTALLATION LINK</a>
 
 > Make sure you grant the [required permissions](#bot-required-permissions) to the bot
 
@@ -29,7 +29,7 @@ Start by inviting **Da Postork** to your server
 Once the bot is added, you can start using it immediately:
 
 ```bash
-/subscribe <source>
+/subscribe
 ```
 
 Select a source, and you're done.
