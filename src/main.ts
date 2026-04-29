@@ -7,5 +7,4 @@ async function bootstrap() {
   await app.init();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-bootstrap();
+void bootstrap();
