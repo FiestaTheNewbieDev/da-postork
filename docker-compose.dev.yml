@@ -1,0 +1,87 @@
+services:
+  migrator:
+    container_name: da-postork-migrator-dev
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.migrator
+      target: migrator
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - .env.development
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - da-postork-dev
+    restart: no
+
+  app:
+    container_name: da-postork-app-dev
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - .env.development
+    volumes:
+      - ./src:/app/src
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./tsconfig.build.json:/app/tsconfig.build.json
+      - ./nest-cli.json:/app/nest-cli.json
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - da-postork-dev
+    restart: unless-stopped
+
+  postgres:
+    container_name: da-postork-postgres-dev
+    image: postgres:17-alpine
+    ports:
+      - '127.0.0.1:5433:5432'
+    env_file:
+      - .env.development
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    networks:
+      - da-postork-dev
+    restart: unless-stopped
+
+  redis:
+    container_name: da-postork-redis-dev
+    image: redis:7-alpine
+    ports:
+      - '127.0.0.1:6380:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis-data-dev:/data
+    networks:
+      - da-postork-dev
+    restart: unless-stopped
+
+networks:
+  da-postork-dev:
+    name: da-postork-dev
+    driver: bridge
+
+volumes:
+  postgres-data-dev:
+    driver: local
+  redis-data-dev:
+    driver: local
