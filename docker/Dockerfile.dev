@@ -1,0 +1,14 @@
+FROM node:24-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --ignore-scripts
+
+COPY . .
+
+RUN addgroup -S da-postork && adduser -S da-postork -G da-postork
+RUN chown -R da-postork:da-postork /app
+USER da-postork
+
+CMD ["npm", "run", "start:dev"]
