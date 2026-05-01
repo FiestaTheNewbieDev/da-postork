@@ -1,21 +1,4 @@
 services:
-  migrator:
-    container_name: da-postork-migrator-dev
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.migrator
-      target: migrator
-    environment:
-      - NODE_ENV=development
-    env_file:
-      - .env.development
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - da-postork-dev
-    restart: no
-
   app:
     container_name: da-postork-app-dev
     build:

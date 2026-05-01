@@ -6,6 +6,7 @@ export enum SourceId {
   CodexYGO = 'CODEXYGO',
   GundamOfficial = 'GUNDAM_OFFICIAL',
   Marvel = 'MARVEL',
+  GithubBlog = 'GITHUB_BLOG',
 }
 
 @Entity({
