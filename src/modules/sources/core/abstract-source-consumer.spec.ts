@@ -79,7 +79,7 @@ describe(AbstractSourceConsumer.name, () => {
     consumer = new TestConsumer(
       {} as MikroORM,
       discordClient as unknown as Client,
-      sourceService as unknown as AbstractSourceService<TestArticle>,
+      sourceService as unknown as AbstractSourceService<TestArticle, unknown>,
     );
 
     worker = (consumer as unknown as { worker: typeof worker }).worker;

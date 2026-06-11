@@ -28,7 +28,7 @@ jest.mock('cron', () => ({
 
 class TestArticle extends AbstractArticle {}
 
-class TestSourceService extends AbstractSourceService<TestArticle> {
+class TestSourceService extends AbstractSourceService<TestArticle, unknown> {
   protected readonly source: Source;
   getUnsavedNews = jest.fn<Promise<unknown[]>, []>();
   saveNews = jest.fn<Promise<TestArticle[]>, [unknown[]]>();
@@ -107,7 +107,7 @@ describe(AbstractSourceService.name, () => {
 
       await process();
 
-      expect(Logger.prototype.log).toHaveBeenCalledWith(
+      expect(void Logger.prototype.log).toHaveBeenCalledWith(
         Constants.MESSAGES.noNewArticles(),
       );
     });
@@ -147,7 +147,7 @@ describe(AbstractSourceService.name, () => {
 
       await process();
 
-      expect(Logger.prototype.error).toHaveBeenCalledWith(error);
+      expect(void Logger.prototype.error).toHaveBeenCalledWith(error);
     });
   });
 });
