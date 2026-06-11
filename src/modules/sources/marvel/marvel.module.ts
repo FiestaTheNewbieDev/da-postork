@@ -27,7 +27,7 @@ const MarvelConsumer = createSourceConsumer<MarvelArticle>(
         headers: {
           'User-Agent': config.get('USER_AGENT'),
         },
-        timeout: 5000,
+        timeout: 20_000,
       }),
     }),
     MikroOrmModule.forFeature([MarvelArticle]),
