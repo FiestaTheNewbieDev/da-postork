@@ -27,7 +27,7 @@ const CodexYGOConsumer = createSourceConsumer<Entities.CodexYGOArticle>(
         headers: {
           'User-Agent': config.get('USER_AGENT'),
         },
-        timeout: 5000,
+        timeout: 10_000,
       }),
     }),
     MikroOrmModule.forFeature(Object.values(Entities)),
