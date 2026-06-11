@@ -8,16 +8,18 @@ export const newsSchema = z.object({
     url: z.url(),
     alternativeText: z.string().nullable(),
   }),
-  publishSite: z.object({
-    url: z.url(),
-  }),
-  linkedSites: z.array(z.unknown()),
+  publishSite: z
+    .object({
+      url: z.url(),
+    })
+    .optional(),
+  linkedSites: z.array(z.unknown()).optional(),
   seriesTags: z.array(z.object({ name: z.string() })),
   tags: z.array(z.unknown()),
   categories: z.array(z.object({ name: z.string() })),
   slug: z.string().nullable(),
   isLegacy: z.boolean(),
-  href: z.url(),
+  url: z.url(),
 });
 
 export const newsPageDataSchema = z.object({
