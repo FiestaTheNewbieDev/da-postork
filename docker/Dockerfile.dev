@@ -1,14 +1,17 @@
 FROM node:24-alpine
 
+ENV NODE_ENV=development
+
 WORKDIR /app
+RUN chown node:node /app
 
-COPY package*.json ./
-RUN npm ci --ignore-scripts
+USER node
 
-COPY . .
+COPY --chown=node:node package*.json ./
+COPY --chown=node:node mikro-orm.config.ts ./
 
-RUN addgroup -S da-postork && adduser -S da-postork -G da-postork
-RUN chown -R da-postork:da-postork /app
-USER da-postork
+RUN npm install
+
+COPY --chown=node:node . .
 
 CMD ["npm", "run", "start:dev"]

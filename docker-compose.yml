@@ -1,8 +1,10 @@
+name: da-postork-prod
+
 services:
   migrator:
     build:
       context: .
-      dockerfile: docker/Dockerfile.migrator
+      dockerfile: docker/Dockerfile
       target: migrator
     environment:
       - NODE_ENV=production
@@ -11,12 +13,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    restart: no
+    restart: 'no'
 
   app:
+    extends:
+      file: docker-compose.base.yml
+      service: app
     build:
       context: .
-      dockerfile: docker/Dockerfile.app
+      dockerfile: docker/Dockerfile
       target: runner
     environment:
       - NODE_ENV=production
@@ -25,39 +30,22 @@ services:
     depends_on:
       migrator:
         condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    restart: unless-stopped
 
   postgres:
-    image: postgres:17-alpine
-    ports:
-      - '127.0.0.1:5433:5432'
+    extends:
+      file: docker-compose.base.yml
+      service: postgres
     env_file:
       - .env.production
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER']
-      interval: 10s
-      timeout: 5s
-      retries: 5
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
-    ports:
-      - '127.0.0.1:6380:6379'
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    extends:
+      file: docker-compose.base.yml
+      service: redis
     volumes:
       - redis-data:/data
-    restart: unless-stopped
 
 volumes:
   postgres-data:

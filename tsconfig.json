@@ -34,5 +34,8 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "types": ["node", "jest"]
+  },
+  "ts-node": {
+    "files": true
   }
 }

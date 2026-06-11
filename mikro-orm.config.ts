@@ -1,10 +1,7 @@
 import { Migrator } from '@mikro-orm/migrations';
 import { defineConfig } from '@mikro-orm/postgresql';
-import dotenv from 'dotenv';
 
-dotenv.config({ path: `.env.${process.env.NODE_ENV ?? 'development'}` });
-
-interface IDatabaseCredentials {
+interface DatabaseCredentials {
   host: string;
   port: string;
   username: string;
@@ -12,7 +9,7 @@ interface IDatabaseCredentials {
   database: string;
 }
 
-function getDatabaseCredentials(): IDatabaseCredentials {
+function getDatabaseCredentials(): DatabaseCredentials {
   const {
     POSTGRES_HOST,
     POSTGRES_PORT,

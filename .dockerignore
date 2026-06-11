@@ -2,9 +2,11 @@
 src/**/*.spec.ts
 
 !src/
+!test/
+!migrations/
 !package.json
 !package-lock.json
 !tsconfig.json
 !tsconfig.build.json
 !mikro-orm.config.ts
-!migrations/
+!jest.config.ts
