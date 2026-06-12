@@ -107,7 +107,7 @@ describe(AbstractSourceService.name, () => {
 
       await process();
 
-      expect(void Logger.prototype.log).toHaveBeenCalledWith(
+      expect(Logger.prototype.log).toHaveBeenCalledWith(
         Constants.MESSAGES.noNewArticles(),
       );
     });
@@ -147,7 +147,7 @@ describe(AbstractSourceService.name, () => {
 
       await process();
 
-      expect(void Logger.prototype.error).toHaveBeenCalledWith(error);
+      expect(Logger.prototype.error).toHaveBeenCalledWith(error);
     });
   });
 });
