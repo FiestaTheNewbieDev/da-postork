@@ -41,7 +41,7 @@ const newsSchema = z.object({
   title: z.string(),
   site: localeSchema,
   slug: z.string(),
-  excerpt: z.string(),
+  excerpt: z.string().nullable(),
   image: imageSchema,
   collection: collectionSchema,
   game_system: gameSystemSchema,

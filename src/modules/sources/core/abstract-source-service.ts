@@ -28,8 +28,7 @@ import { EmbedBuilder, GuildEmoji } from 'discord.js';
  */
 export abstract class AbstractSourceService<
   TArticle extends AbstractArticle,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TNews = any,
+  TNews,
 > implements OnModuleInit {
   protected readonly logger = new Logger(this.constructor.name);
 

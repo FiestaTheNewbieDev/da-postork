@@ -29,7 +29,7 @@ import { Client, GuildChannel } from 'discord.js';
  */
 export function createSourceConsumer<TArticle extends AbstractArticle>(
   queueName: string,
-  serviceType: Type<AbstractSourceService<TArticle>>,
+  serviceType: Type<AbstractSourceService<TArticle, unknown>>,
   concurrency = 4,
 ): Type<AbstractSourceConsumer<TArticle>> {
   @Processor(queueName, { concurrency })
@@ -37,7 +37,7 @@ export function createSourceConsumer<TArticle extends AbstractArticle>(
     constructor(
       orm: MikroORM,
       client: Client,
-      service: AbstractSourceService<TArticle>,
+      service: AbstractSourceService<TArticle, unknown>,
     ) {
       super(orm, client, service);
     }
@@ -68,7 +68,7 @@ export abstract class AbstractSourceConsumer<TArticle extends AbstractArticle>
   constructor(
     protected readonly orm: MikroORM,
     protected readonly client: Client,
-    protected readonly sourceService: AbstractSourceService<TArticle>,
+    protected readonly sourceService: AbstractSourceService<TArticle, unknown>,
   ) {
     super();
   }

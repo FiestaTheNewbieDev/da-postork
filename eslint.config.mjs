@@ -1,17 +1,19 @@
-// @ts-check
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+export default defineConfig([
+  globalIgnores(['dist/**', 'node_modules/**', 'migrations/**']),
   {
-    ignores: ['eslint.config.mjs', 'dist/**', 'node_modules/**', 'migrations/**', 'mikro-orm.config.ts'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-  {
+    files: ['**/*.ts'],
+    extends: [
+      eslint.configs.recommended,
+      tseslint.configs.recommendedTypeChecked,
+      tseslint.configs.recommendedTypeCheckedOnly,
+      eslintPluginPrettierRecommended,
+    ],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -23,22 +25,23 @@ export default tseslint.config(
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    rules: {
+      '@typescript-eslint/no-deprecated': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      '@typescript-eslint/ban-ts-comment': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    },
   },
   {
-    files: ['**/*.spec.ts'],
+    files: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
     rules: {
       '@typescript-eslint/unbound-method': 'off',
     },
   },
-  {
-    rules: {
-      '@typescript-eslint/no-deprecated': 'warn',
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
-      '@typescript-eslint/ban-ts-comment': 'warn',
-      'prettier/prettier': ['error', { endOfLine: 'auto' }],
-    },
-  },
-);
+]);
