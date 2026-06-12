@@ -29,7 +29,7 @@ const WarhammerCommunityConsumer =
           'Content-Type': 'application/json',
           'User-Agent': config.get('USER_AGENT'),
         },
-        timeout: 5000,
+        timeout: 10_000,
       }),
     }),
     MikroOrmModule.forFeature([WarhammerCommunityArticle]),

@@ -10,6 +10,19 @@ COPY src ./src
 
 RUN npm run build
 
+FROM node:24-alpine AS migrator
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY package*.json tsconfig*.json mikro-orm.config.ts ./
+COPY migrations ./migrations
+
+CMD ["npx", "mikro-orm", "migration:up"]
+
 FROM node:24-alpine AS deps
 
 WORKDIR /app

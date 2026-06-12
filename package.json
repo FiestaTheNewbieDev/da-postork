@@ -12,7 +12,8 @@
   "author": "Clément FOSSORIER",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\"  \"test/**/*.ts\"",
+    "command": "ts-node -r tsconfig-paths/register src/cli.ts",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "lint:fix": "eslint \"{src,test}/**/*.ts\" --fix",
     "makemigrations": "mikro-orm migration:create",
@@ -31,11 +32,11 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "npm run format",
-      "npm run lint:fix"
+      "prettier --write",
+      "eslint --fix"
     ],
     "*.{json,md,yml,yaml}": [
-      "npm run format"
+      "prettier --write"
     ]
   },
   "dependencies": {
@@ -56,6 +57,7 @@
     "discord.js": "^14.25.1",
     "dotenv": "^17.3.1",
     "necord": "^6.12.4",
+    "nest-commander": "^3.20.1",
     "redis": "^5.11.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -96,5 +98,11 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./mikro-orm.config.ts"
+    ]
   }
 }

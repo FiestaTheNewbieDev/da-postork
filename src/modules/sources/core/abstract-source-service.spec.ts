@@ -28,7 +28,7 @@ jest.mock('cron', () => ({
 
 class TestArticle extends AbstractArticle {}
 
-class TestSourceService extends AbstractSourceService<TestArticle> {
+class TestSourceService extends AbstractSourceService<TestArticle, unknown> {
   protected readonly source: Source;
   getUnsavedNews = jest.fn<Promise<unknown[]>, []>();
   saveNews = jest.fn<Promise<TestArticle[]>, [unknown[]]>();
