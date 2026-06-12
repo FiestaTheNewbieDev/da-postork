@@ -22,7 +22,7 @@ jobs:
     needs: pull
     runs-on: [self-hosted, production]
     steps:
-      - name: 🚀 Restart app
+      - name: 🚀 Restart stack
         working-directory: ${{ vars.WORKDIR }}
         run: docker compose up app migrator --build -d
 
@@ -55,4 +55,4 @@ jobs:
       - name: 📋 Dump logs on failure
         if: failure()
         working-directory: ${{ vars.WORKDIR }}
-        run: docker compose logs app --tail=50 >> $GITHUB_STEP_SUMMARY
+        run: docker compose logs migrator app --tail=50 >> $GITHUB_STEP_SUMMARY
