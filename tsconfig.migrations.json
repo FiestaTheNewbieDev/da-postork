@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./dist",
+    "declaration": false,
+    "incremental": false,
+    "types": ["node"]
+  },
+  "include": ["migrations", "mikro-orm.config.ts"]
+}

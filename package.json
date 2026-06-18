@@ -12,6 +12,7 @@
   "author": "Clément FOSSORIER",
   "scripts": {
     "build": "nest build",
+    "build:migrations": "tsc -p tsconfig.migrations.json",
     "command": "ts-node -r tsconfig-paths/register src/cli.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\"",
@@ -102,7 +103,8 @@
   "mikro-orm": {
     "useTsNode": true,
     "configPaths": [
-      "./mikro-orm.config.ts"
+      "./mikro-orm.config.ts",
+      "./dist/mikro-orm.config.js"
     ]
   }
 }

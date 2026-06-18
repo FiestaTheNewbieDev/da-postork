@@ -5,21 +5,22 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --ignore-scripts
 
-COPY tsconfig*.json ./
+COPY tsconfig*.json mikro-orm.config.ts ./
 COPY src ./src
+COPY migrations ./migrations
 
-RUN npm run build
+RUN npm run build && npm run build:migrations
 
 FROM node:24-alpine AS migrator
 
 ENV NODE_ENV=production
+ENV MIKRO_ORM_CLI_USE_TS_NODE=false
 
 WORKDIR /app
 
+COPY package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY package*.json tsconfig*.json mikro-orm.config.ts ./
-COPY migrations ./migrations
 
 CMD ["npx", "mikro-orm", "migration:up"]
 
