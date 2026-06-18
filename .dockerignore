@@ -8,5 +8,6 @@ src/**/*.spec.ts
 !package-lock.json
 !tsconfig.json
 !tsconfig.build.json
+!tsconfig.migrations.json
 !mikro-orm.config.ts
 !jest.config.ts

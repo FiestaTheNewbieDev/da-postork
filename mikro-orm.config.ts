@@ -52,7 +52,8 @@ function createConfig(): ReturnType<typeof defineConfig> {
     entitiesTs: ['./src/entities/**/*.ts'],
     extensions: [Migrator],
     migrations: {
-      path: './migrations',
+      path: './dist/migrations',
+      pathTs: './migrations',
       glob: '!(*.d).{js,ts}',
     },
   };
